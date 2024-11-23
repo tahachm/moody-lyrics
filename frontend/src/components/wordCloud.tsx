@@ -55,9 +55,9 @@ export default function Example({ width, height, showControls }: ExampleProps) {
   return (
     <>
     <div className='text-center'>
-        <h1 className='text-5xl text-white'>Most Looked Up Songs</h1>
+        <h1 className='text-5xl font-bold mb-8 text-white'>Most Looked Up Songs</h1>
     </div>
-    <div className="wordcloud">
+    <div className="wordcloud !w-full !justify-center">
       <Wordcloud
         words={words}
         width={width}
@@ -118,7 +118,7 @@ export default function Example({ width, height, showControls }: ExampleProps) {
           user-select: none;
         }
         .wordcloud svg {
-          margin: 1rem 0;
+          margin: auto;
           cursor: pointer;
         }
 
