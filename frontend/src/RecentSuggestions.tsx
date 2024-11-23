@@ -1,5 +1,3 @@
-import { useState } from 'react'
-
 interface Song {
   id: number
   name: string

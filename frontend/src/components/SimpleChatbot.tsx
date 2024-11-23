@@ -2,6 +2,7 @@ import { useState } from "react";
 import { generateText } from "ai";
 import { createOpenAI as createGroq } from "@ai-sdk/openai";
 import "./SimpleChatbot.css";
+import MusicLogo from "./MusicLogo";
 
 const SimpleChatbot = () => {
   const [userInput, setUserInput] = useState("");
@@ -43,7 +44,27 @@ const SimpleChatbot = () => {
 
   return (
     <>
-      <h1 className="font-extrabold my-10">Jam Genie</h1>
+      <div className="flex justify-center mb-12 items-center space-x-4">
+        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-fuchsia-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6 text-white"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
+            />
+          </svg>
+        </div>
+        <h1 className="text-5xl font-bold bg-gradient-to-r from-fuchsia-400 to-cyan-400 text-transparent bg-clip-text">
+          Jam Genie
+        </h1>
+      </div>
 
       <section className="w-full mx-auto px-4 mb-12">
         <div className="bg-white bg-opacity-10 rounded-lg p-4">

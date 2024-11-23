@@ -35,8 +35,7 @@ function getRotationDegree() {
   return rand * degree;
 }
 
-const words = wordFreq(totoAfricaLyrics);
-console.log(words);
+const words = wordFreq(totoAfricaLyrics);//Words replace from API
 
 const fontScale = scaleLog({
   domain: [Math.min(...words.map((w) => w.value)), Math.max(...words.map((w) => w.value))],
