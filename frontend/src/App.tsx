@@ -1,5 +1,4 @@
 import "./App.css";
-import './index.css'; // Import Tailwind CSS here
 import SimpleChatbot from "./components/SimpleChatbot";
 import Example from "./components/wordCloud";
 

@@ -1,11 +1,12 @@
-// tailwind.config.js
-module.exports = {
+/** @type {import('tailwindcss').Config} */
+export default {
   content: [
-    "./index.html", // Include your Vite entry file
-    "./src/**/*.{js,ts,jsx,tsx}", // Include all JS/TS/React files
+    "./index.html", // Vite's entry point
+    "./src/**/*.{js,ts,jsx,tsx}", // React component files
+    "./src/*.{js,ts,jsx,tsx}", // React component files
   ],
   theme: {
-    extend: {}, // Customize your theme here
+    extend: {}, // Add custom themes or extend default configurations here
   },
-  plugins: [],
+  plugins: [], // Add any Tailwind plugins if needed
 };
