@@ -1,0 +1,32 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 48 48"
+  width="48"
+  height="48"
+>
+  <!-- Background Circle with Gradient -->
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f472b6" /> <!-- fuchsia-500 -->
+      <stop offset="100%" stop-color="#06b6d4" /> <!-- cyan-500 -->
+    </linearGradient>
+  </defs>
+  <circle cx="24" cy="24" r="24" fill="url(#gradient)" />
+
+  <!-- Inner SVG Icon -->
+  <g transform="translate(12, 12)">
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 0"
+      stroke="white"
+      stroke-width="2"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
+      />
+    </svg>
+  </g>
+</svg>

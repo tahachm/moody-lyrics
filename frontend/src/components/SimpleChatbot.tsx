@@ -2,7 +2,6 @@ import { useState } from "react";
 import { generateText } from "ai";
 import { createOpenAI as createGroq } from "@ai-sdk/openai";
 import "./SimpleChatbot.css";
-import MusicLogo from "./MusicLogo";
 
 const SimpleChatbot = () => {
   const [userInput, setUserInput] = useState("");
