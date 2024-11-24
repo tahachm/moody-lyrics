@@ -39,39 +39,28 @@ resource "aws_s3_bucket_policy" "frontend_policy" {
   })
 }
 
-# Step 1: Rebuild the frontend
 resource "null_resource" "rebuild_frontend" {
   provisioner "local-exec" {
     command = "cd ${path.module}/../../../frontend && npm run build"
   }
 }
 
-# Step 2: Generate the file list after the build
-resource "null_resource" "generate_fileset" {
-  provisioner "local-exec" {
-    command = "python3 ${path.module}/generate_fileset.py"
-  }
-
-  # Ensure the build process completes first
-  depends_on = [null_resource.rebuild_frontend]
-}
-
-# Step 3: Read the generated file list
-data "local_file" "dynamic_fileset" {
-  filename = "${path.module}/fileset.json"
-
-  # Ensure the fileset is generated before reading
-  depends_on = [null_resource.generate_fileset]
-}
-
-# Step 4: Decode the file list
 locals {
-  dynamic_fileset = jsondecode(data.local_file.dynamic_fileset.content)
+  predefined_file_map = {
+    "file_0"= "index.html",
+    "file_1"= "_redirects",
+    "file_2"= "vite.svg",
+    "file_3"= "logo.svg",
+    "file_4"= "index.css",
+    "file_5"= "index.js"
+}
 }
 
-# Step 5: Upload files to S3
+
+# Sync Build Files to S3
 resource "aws_s3_bucket_object" "frontend_files" {
-  for_each = local.dynamic_fileset
+  depends_on = [null_resource.rebuild_frontend]
+  for_each = local.predefined_file_map
 
   bucket  = aws_s3_bucket.frontend_bucket.id
   key     = each.value
@@ -94,7 +83,8 @@ resource "aws_s3_bucket_object" "frontend_files" {
       "eot"   = "application/vnd.ms-fontobject",
       "otf"   = "font/otf",
     },
-    lower(element(split(".", each.value), length(split(".", each.value)) - 1)),
+    lower(element(split(".", each.value), length(split(".", each.value)) - 1)),  # Get the last part of the filename
     "text/html"  # Default Content-Type
   )
 }
+

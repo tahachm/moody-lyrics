@@ -2,17 +2,16 @@ import { UserCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signIn, signUp } from '@aws-amplify/auth';
+import { signIn, signUp, confirmSignUp,fetchUserAttributes, signOut } from '@aws-amplify/auth';
 import { useAuth } from "../auth";
 import { useSetRecoilState } from "recoil";
 import { userIdState } from "../recoil/atoms";
-
-
 
 export default function LoginSignupComponent() {
   const [page, setPage] = useState('login'); // Default to login
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmationCode, setConfirmationCode] = useState(''); // For confirm signup
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { setIsAuthenticated } = useAuth();
@@ -32,16 +31,25 @@ export default function LoginSignupComponent() {
     if (page === 'login') {
       try {
         // Login with Cognito
-        const signInOutput = await signIn({username, password});
+        const signInOutput = await signIn({ username, password });
+        console.log("Sign in output:", signInOutput);
+
+        if(signInOutput.isSignedIn == false)
+        {
+          throw new Error("Please Verify your Account (Check your Email for the Code)")
+        }
+
+        const user_ats = await fetchUserAttributes();
+
+        setUserId((user_ats?.sub as string))
         alert('Login successful!');
         setIsAuthenticated(true);
-        // setUserId(signInOutput.userId);
         setPage('main'); // Navigate to the main page
       } catch (err:any) {
         console.error('Login error:', err);
         setError(err.message || 'An error occurred during login.');
       }
-    } else {
+    } else if (page === 'signup') {
       try {
         // Sign up with Cognito
         await signUp({
@@ -50,16 +58,31 @@ export default function LoginSignupComponent() {
           options: {
             userAttributes: {
               email: username,
-            }}
+            },
+          },
         });
         alert('Signup successful! Please check your email for the verification code.');
-        setPage('login'); // Switch to the login page
+        setPage('confirm-signup'); // Switch to confirm signup page
       } catch (err:any) {
         console.error('Signup error:', err);
         setError(err.message || 'An error occurred during signup.');
       }
+    } else if (page === 'confirm-signup') {
+      try {
+        // Confirm Sign Up with verification code
+        await confirmSignUp({username, confirmationCode});
+        alert('Signup confirmed! You can now log in.');
+        setPage('login'); // Switch to the login page
+      } catch (err:any) {
+        console.error('Confirm signup error:', err);
+        setError(err.message || 'An error occurred during confirmation.');
+      }
     }
   };
+
+  useEffect(()=>{
+    signOut();
+  },[])
 
   return (
     <div className="min-h-screen w-full bg-[#1A0B2E] flex items-center justify-center overflow-hidden">
@@ -85,44 +108,67 @@ export default function LoginSignupComponent() {
                 transition={{ delay: 0.3 }}
                 className="text-3xl font-bold text-white mb-8 text-center bg-gradient-to-r from-purple-400 to-pink-300 bg-clip-text text-transparent"
               >
-                {page === 'login' ? 'Login' : 'Sign Up'}
+                {page === 'login' ? 'Login' : page === 'signup' ? 'Sign Up' : 'Confirm Signup'}
               </motion.h1>
 
               <form className="space-y-6" onSubmit={handleSubmit}>
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="relative group"
-                >
-                  <UserCircle className="absolute left-0 top-2 h-6 w-6 text-purple-300 transition-colors group-hover:text-purple-200" />
-                  <input
-                    type="text"
-                    placeholder="Email"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 bg-transparent border-b-2 border-purple-700/50 text-white placeholder:text-purple-300/50 
-                    focus:border-purple-500 focus:outline-none transition-all duration-300
-                    hover:border-purple-600/70"
-                  />
-                </motion.div>
+                {(page === 'login' || page === 'signup' || page === 'confirm-signup') && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="relative group"
+                  >
+                    <UserCircle className="absolute left-0 top-2 h-6 w-6 text-purple-300 transition-colors group-hover:text-purple-200" />
+                    <input
+                      type="text"
+                      placeholder="Email"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 bg-transparent border-b-2 border-purple-700/50 text-white placeholder:text-purple-300/50 
+                      focus:border-purple-500 focus:outline-none transition-all duration-300
+                      hover:border-purple-600/70"
+                    />
+                  </motion.div>
+                )}
 
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.5 }}
-                  className="relative"
-                >
-                  <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-4 py-2 bg-transparent border-b-2 border-purple-700/50 text-white placeholder:text-purple-300/50 
-                    focus:border-purple-500 focus:outline-none transition-all duration-300
-                    hover:border-purple-600/70"
-                  />
-                </motion.div>
+                {(page === 'login' || page === 'signup') && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5 }}
+                    className="relative"
+                  >
+                    <input
+                      type="password"
+                      placeholder="Password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full px-4 py-2 bg-transparent border-b-2 border-purple-700/50 text-white placeholder:text-purple-300/50 
+                      focus:border-purple-500 focus:outline-none transition-all duration-300
+                      hover:border-purple-600/70"
+                    />
+                  </motion.div>
+                )}
+
+                {page === 'confirm-signup' && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5 }}
+                    className="relative"
+                  >
+                    <input
+                      type="text"
+                      placeholder="Verification Code"
+                      value={confirmationCode}
+                      onChange={(e) => setConfirmationCode(e.target.value)}
+                      className="w-full px-4 py-2 bg-transparent border-b-2 border-purple-700/50 text-white placeholder:text-purple-300/50 
+                      focus:border-purple-500 focus:outline-none transition-all duration-300
+                      hover:border-purple-600/70"
+                    />
+                  </motion.div>
+                )}
 
                 {error && <p className="text-red-500 text-sm">{error}</p>}
 
@@ -137,7 +183,7 @@ export default function LoginSignupComponent() {
                   text-white font-medium tracking-wide hover:opacity-90 transition-all duration-300
                   shadow-lg shadow-purple-500/30 hover:shadow-purple-500/40 border-none focus:outline-none"
                 >
-                  {page === 'login' ? 'Login' : 'Sign Up'}
+                  {page === 'login' ? 'Login' : page === 'signup' ? 'Sign Up' : 'Confirm Signup'}
                 </motion.button>
 
                 <motion.div
@@ -147,6 +193,7 @@ export default function LoginSignupComponent() {
                   className="text-center mt-6"
                 >
                   {page === 'login' ? (
+                    <>
                     <p
                       onClick={() => {
                         setError('');
@@ -156,7 +203,19 @@ export default function LoginSignupComponent() {
                     >
                       Don't have an account? Sign Up
                     </p>
-                  ) : (
+                    <p
+                      onClick={() => {
+                        setError('');
+                        setPage('confirm-signup');
+                      }}
+                      className="text-sm mt-2 text-purple-300 hover:text-purple-200 transition-colors cursor-pointer"
+                    >
+                      Signed Up? Verify your account
+                    </p>
+                    </>
+                    
+                    
+                  ) : page === 'signup' ? (
                     <p
                       onClick={() => {
                         setError('');
@@ -165,6 +224,16 @@ export default function LoginSignupComponent() {
                       className="text-sm text-purple-300 hover:text-purple-200 transition-colors cursor-pointer"
                     >
                       Already have an account? Login
+                    </p>
+                  ) : (
+                    <p
+                      onClick={() => {
+                        setError('');
+                        setPage('signup');
+                      }}
+                      className="text-sm text-purple-300 hover:text-purple-200 transition-colors cursor-pointer"
+                    >
+                      Didn't receive a code? Sign Up Again
                     </p>
                   )}
                 </motion.div>
