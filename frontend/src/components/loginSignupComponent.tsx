@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signIn, signUp } from '@aws-amplify/auth';
+import { useAuth } from "../auth";
 
 export default function LoginSignupComponent() {
   const [page, setPage] = useState('login'); // Default to login
@@ -10,6 +11,7 @@ export default function LoginSignupComponent() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { setIsAuthenticated } = useAuth();
 
   // Navigate to the main page after successful login
   useEffect(() => {
@@ -27,6 +29,7 @@ export default function LoginSignupComponent() {
         // Login with Cognito
         await signIn({username, password});
         alert('Login successful!');
+        setIsAuthenticated(true);
         setPage('main'); // Navigate to the main page
       } catch (err:any) {
         console.error('Login error:', err);
