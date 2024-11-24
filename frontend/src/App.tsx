@@ -1,6 +1,7 @@
 import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SimpleChatbot from "./components/SimpleChatbot";
+import NavbarComp from "./components/NavbarComp";
 import TrendingSection from "./components/TrendingSection";
 import Example from "./components/wordCloud";
 import SuggestedSongs from "./RecentSuggestions";
@@ -8,7 +9,6 @@ import LoginSignupComponent from "./components/loginSignupComponent";
 import { AuthProvider } from "./auth";
 import ProtectedRoute from "./protectedRoutes";
 import { RecoilRoot } from "recoil";
-
 
 const App: React.FC = () => {
   return (
@@ -26,6 +26,7 @@ const App: React.FC = () => {
                 <ProtectedRoute
                   element={
                     <div className="flex flex-col justify-center">
+                      <NavbarComp />
                       <SimpleChatbot />
                       <SuggestedSongs />
                       <TrendingSection />

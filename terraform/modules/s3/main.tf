@@ -41,7 +41,7 @@ resource "aws_s3_bucket_policy" "frontend_policy" {
 
 resource "null_resource" "rebuild_frontend" {
   provisioner "local-exec" {
-    command = "cd ${path.module}/../../../frontend && npm run build"
+    command = "cd ${path.module}/../../../frontend && npm install && npm run build"
   }
 }
 

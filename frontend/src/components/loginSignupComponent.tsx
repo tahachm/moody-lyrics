@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signIn, signUp, confirmSignUp,fetchUserAttributes, signOut } from '@aws-amplify/auth';
 import { useRecoilState } from "recoil";
-import { userIdState, isAuthenticatedState} from "../recoil/atoms";
+import { userIdState, isAuthenticatedState, userNameState} from "../recoil/atoms";
 
 
 export default function LoginSignupComponent() {
@@ -17,6 +17,7 @@ export default function LoginSignupComponent() {
   // const { setIsAuthenticated } = useAuth();
   const [, setUserId] = useRecoilState(userIdState);
   const [, setIsAuthenticated] = useRecoilState(isAuthenticatedState);
+  const [, setUserName] = useRecoilState(userNameState);
 
 
   // Navigate to the main page after successful login
@@ -42,8 +43,9 @@ export default function LoginSignupComponent() {
         }
 
         const user_ats = await fetchUserAttributes();
-
-        setUserId((user_ats?.sub as string))
+        console.log(user_ats);
+        setUserId((user_ats?.sub as string));
+        setUserName((user_ats?.email as string));
         alert('Login successful!');
         setIsAuthenticated(true);
         setPage('main'); // Navigate to the main page
@@ -84,6 +86,9 @@ export default function LoginSignupComponent() {
 
   useEffect(()=>{
     signOut();
+    setIsAuthenticated(false);
+    setUserId(null);
+    setUserName(null);
   },[])
 
   return (

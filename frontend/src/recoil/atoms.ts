@@ -11,6 +11,12 @@ export const userIdState = atom<string | null>({
   effects_UNSTABLE: [persistAtom], // Add persistAtom to persist state
 });
 
+export const userNameState = atom<string | null>({
+  key: "userNameState", // Unique key for the atom
+  default: null, // Default value
+  effects_UNSTABLE: [persistAtom], // Add persistAtom to persist state
+});
+
 
 export const isAuthenticatedState = atom<boolean>({
   key: "isAuthenticatedState",
