@@ -6,10 +6,10 @@ def create_app():
     app = Flask(__name__)
     
     # Configuration
-    app.config['DB_HOST'] = 'localhost'  # Change if running on a different host
+    app.config['DB_HOST'] = 'database-1.cluster-ctwkoq0ogzgp.us-east-1.rds.amazonaws.com' #'localhost' # Change if running on a different host
     app.config['DB_NAME'] = 'music_db'   # Replace with your database name
     app.config['DB_USER'] = 'postgres'   # Replace with your DB username
-    app.config['DB_PASSWORD'] = '1441'  # Replace with your DB password
+    app.config['DB_PASSWORD'] = 'mustafa1441'  # Replace with your DB password
     
     return app
 
