@@ -2,70 +2,82 @@
     max-width: 600px;
     margin: 50px auto;
     padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
     font-family: Arial, sans-serif;
 }
 
-.chatbot-input-container {
-    display: flex;
-    gap: 10px;
+.song-recommendation {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 24px;
+    margin-top: 24px;
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.chatbot-input {
-    flex-grow: 1;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 16px;
-}
-
-.chatbot-button {
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.chatbot-button:hover {
-    background-color: #0056b3;
-}
-
-.chatbot-response {
-    margin-top: 20px;
-    padding: 10px;
-    background-color: #f9f9f9;
-    border: 1px solid #e0e0e0;
-    border-radius: 5px;
-    font-size: 16px;
-    line-height: 1.5;
-    color: black;
-}
-
-.chatbot-response h1 {
-    font-size: 24px;
-    margin-bottom: 10px;
-}
-
-.chatbot-response h2 {
-    font-size: 20px;
-    margin-bottom: 8px;
-}
-
-.chatbot-response h3 {
-    font-size: 18px;
-    margin-bottom: 6px;
-}
-
-.chatbot-response strong {
+.song-recommendation h2 {
+    background: linear-gradient(to right, #e879f9, #22d3ee);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-size: 1.5rem;
     font-weight: bold;
+    margin-bottom: 20px;
 }
 
-.chatbot-response em {
-    font-style: italic;
+.song-details {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 24px;
 }
+
+.song-detail-item {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.song-detail-label {
+    color: #e879f9;
+    font-weight: 600;
+    min-width: 100px;
+}
+
+.song-detail-value {
+    color: #fff;
+}
+
+.mood-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+
+.mood-tag {
+    background: linear-gradient(45deg, #e879f9, #22d3ee);
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.875rem;
+    color: white;
+}
+
+.recommendation-message {
+    background: rgba(255, 255, 255, 0.05);
+    border-left: 4px solid #e879f9;
+    padding: 16px;
+    border-radius: 0 8px 8px 0;
+    color: #fff;
+    font-style: italic;
+    margin-top: 20px;
+}
+
+.error-message {
+    color: #ef4444;
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 16px;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+

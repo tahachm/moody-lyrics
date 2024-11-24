@@ -1,11 +1,15 @@
 import { useState } from "react";
 import { generateText } from "ai";
 import { createOpenAI as createGroq } from "@ai-sdk/openai";
+// import { userIdState } from "../recoil/atoms"; //uncomment this line once login signup is successfully implemented
+// import { useRecoilValue } from "recoil"; //uncomment this line once login signup is successfully implemented
 import "./SimpleChatbot.css";
+
 
 const SimpleChatbot = () => {
   const [userInput, setUserInput] = useState("");
-  const [responseText, setResponseText] = useState("");
+  const [responseJson, setResponseJson] = useState<any>(null);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleInputChange = (e: any) => {
     setUserInput(e.target.value);
@@ -17,28 +21,80 @@ const SimpleChatbot = () => {
       apiKey: import.meta.env.VITE_APP_GROQ_API_KEY,
     });
 
+    // const userId = useRecoilValue(userIdState); //uncomment this line once login signup is successfully implemented
+    const userId = "7"; //comment this temporary line once login signup is successfully implemented
+
     try {
       const { text } = await generateText({
         model: groq("llama-3.2-1b-preview"),
-        system:
-          "You are a music recommendation system, when talking with a user analyze their mood and suggest them music accordingly. Give the youtube links for these recommendations. Give output in bullet points. Give bollywood music only. If user want to ride a bike do suggest them dhoom 3 theme song",
+        system: `
+          You are a highly sophisticated song recommendation engine. Your task is to provide the best possible song recommendation 
+          based on a user's emotional state, which is expressed in their query. For each user query, suggest a single song 
+          that aligns with the user's current mood and situation. 
+          The song recommendation should include the following:
+          1. Song Name
+          2. Artist Name
+          3. Album Name (if applicable else "None")
+          4. 3 Closest Mood Tags (e.g., happy, calm, energetic, frustrated, etc.) that best represent the mood of the user based on the query.
+          5. Song Genre (e.g., rock, pop, classical, etc.)
+          6. A personalized message offering encouragement, advice, or empathy that fits the user's emotional context. 
+          Your response should be in JSON format only, with no additional commentary.
+    
+          Example:
+          {
+            "song": {
+              "name": "Born to Be Wild",
+              "artist": "Steppenwolf",
+              "album": "Steppenwolf",
+              "mood_tags": ["thrill", "freedom", "adrenaline"],
+              "genre": "rock"
+            },
+            "message": "Feel the wind in your face and let the music amplify the rush! Ride safe and enjoy the adrenaline!"
+          }
+    
+          User Query:
+        `,
         prompt: userInput,
       });
-      setResponseText(formatResponse(text));
+    
+      // Extract JSON part from the response
+      const jsonMatch = text.match(/{[\s\S]*}/);
+      if (jsonMatch) {
+        const extractedJson = JSON.parse(jsonMatch[0]);
+        setResponseJson(extractedJson); // Display the correct response
+        setErrorMessage(""); // Clear any previous error messages
+    
+        try {
+          // Send data to your API
+          await fetch("https://your-api-endpoint/lambda-handler", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              userId,
+              llmResponse: extractedJson,
+            }),
+          });
+        } catch (apiError) {
+          console.error("Error sending data to Lambda:", apiError);
+          setErrorMessage("Failed to send data to the server, but the recommendation is displayed below.");
+        }
+      } else {
+        setErrorMessage("Unable to parse JSON from response.");
+        setResponseJson(null);
+      }
     } catch (error) {
-      setResponseText("Unable to fetch response from LLM: " + error);
+      if (error instanceof Error) {
+        setErrorMessage("Error fetching response: " + error.message);
+      } else {
+        setErrorMessage("An unknown error occurred.");
+      }
+      setResponseJson(null);
     }
-  };
+    
 
-  const formatResponse = (text: any) => {
-    // Simple formatting logic to interpret markdown-like syntax
-    return text
-      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>") // Bold text
-      .replace(/_(.*?)_/g, "<em>$1</em>") // Italic text
-      .replace(/# (.*?)\n/g, "<h1>$1</h1>") // Heading 1
-      .replace(/## (.*?)\n/g, "<h2>$1</h2>") // Heading 2
-      .replace(/### (.*?)\n/g, "<h3>$1</h3>") // Heading 3
-      .replace(/\n/g, "<br />"); // Line breaks
+
   };
 
   return (
@@ -82,11 +138,43 @@ const SimpleChatbot = () => {
               Send
             </button>
           </div>
-          {responseText ? (
-            <div className="chatbot-response">
-              <div dangerouslySetInnerHTML={{ __html: responseText }} />
-            </div>
-          ) : null}
+          {errorMessage && <p className="text-red-500 mt-4">{errorMessage}</p>}
+          {responseJson && (
+  <div className="song-recommendation">
+    <h2>Your Song Recommendation</h2>
+    <div className="song-details">
+      <div className="song-detail-item">
+        <span className="song-detail-label">Song Name:</span>
+        <span className="song-detail-value">{responseJson.song.name}</span>
+      </div>
+      <div className="song-detail-item">
+        <span className="song-detail-label">Artist:</span>
+        <span className="song-detail-value">{responseJson.song.artist}</span>
+      </div>
+      <div className="song-detail-item">
+        <span className="song-detail-label">Album:</span>
+        <span className="song-detail-value">{responseJson.song.album}</span>
+      </div>
+      <div className="song-detail-item">
+        <span className="song-detail-label">Genre:</span>
+        <span className="song-detail-value">{responseJson.song.genre}</span>
+      </div>
+      <div className="song-detail-item">
+        <span className="song-detail-label">Mood Tags:</span>
+        <div className="mood-tags">
+          {responseJson.song.mood_tags.map((tag: string, index: number) => (
+            <span key={index} className="mood-tag">
+              {tag}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+    <div className="recommendation-message">
+      {responseJson.message}
+    </div>
+  </div>
+)}
         </div>
       </section>
     </>
