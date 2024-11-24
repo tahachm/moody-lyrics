@@ -1,12 +1,10 @@
-# terraform/modules/cloudfront/main.tf
-
 resource "aws_cloudfront_origin_access_identity" "oai" {
   comment = "OAI for accessing S3 bucket ${var.bucket_name}"
 }
 
 resource "aws_cloudfront_distribution" "cloudfront_distribution" {
   origin {
-    domain_name = "${var.bucket_name}.s3.amazonaws.com"  # Use the REST API endpoint
+    domain_name = "${var.bucket_name}.s3.amazonaws.com"
     origin_id   = "S3-${var.bucket_name}"
     
     s3_origin_config {
@@ -38,6 +36,14 @@ resource "aws_cloudfront_distribution" "cloudfront_distribution" {
     min_ttl                = 0
     default_ttl            = 3600
     max_ttl                = 86400
+  }
+
+  # Custom Error Response for SPA Routing
+  custom_error_response {
+    error_code            = 403
+    response_page_path    = "/index.html"
+    response_code         = 200
+    error_caching_min_ttl = 0
   }
 
   # Price Class: Adjust based on your target audience regions
