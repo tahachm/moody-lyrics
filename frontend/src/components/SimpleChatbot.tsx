@@ -11,7 +11,7 @@ const SimpleChatbot = () => {
     setUserInput(e.target.value);
   };
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async () => {
     const groq = createGroq({
       baseURL: "https://api.groq.com/openai/v1",
       apiKey: import.meta.env.VITE_APP_GROQ_API_KEY,

@@ -1,0 +1,20 @@
+/* wordCloud.module.css */
+.wordcloud {
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+  }
+  .wordcloud svg {
+    margin: auto;
+    cursor: pointer;
+  }
+  .wordcloud label {
+    display: inline-flex;
+    align-items: center;
+    font-size: 14px;
+    margin-right: 8px;
+  }
+  .wordcloud textarea {
+    min-height: 100px;
+  }
+  

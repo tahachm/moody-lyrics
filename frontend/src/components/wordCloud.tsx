@@ -3,6 +3,7 @@ import { Text } from '@visx/text';
 import { scaleLog } from '@visx/scale';
 import Wordcloud from '@visx/wordcloud/lib/Wordcloud';
 import { totoAfricaLyrics } from './text.fixture';
+import "./wordCloud.css"
 
 interface ExampleProps {
   width: number;
@@ -110,27 +111,6 @@ export default function Example({ width, height, showControls }: ExampleProps) {
           <br />
         </div>
       )}
-      <style jsx>{`
-        .wordcloud {
-          display: flex;
-          flex-direction: column;
-          user-select: none;
-        }
-        .wordcloud svg {
-          margin: auto;
-          cursor: pointer;
-        }
-
-        .wordcloud label {
-          display: inline-flex;
-          align-items: center;
-          font-size: 14px;
-          margin-right: 8px;
-        }
-        .wordcloud textarea {
-          min-height: 100px;
-        }
-      `}</style>
     </div>
     </>
     
