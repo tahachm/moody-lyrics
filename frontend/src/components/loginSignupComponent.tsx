@@ -4,6 +4,10 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signIn, signUp } from '@aws-amplify/auth';
 import { useAuth } from "../auth";
+import { useSetRecoilState } from "recoil";
+import { userIdState } from "../recoil/atoms";
+
+
 
 export default function LoginSignupComponent() {
   const [page, setPage] = useState('login'); // Default to login
@@ -12,6 +16,7 @@ export default function LoginSignupComponent() {
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const { setIsAuthenticated } = useAuth();
+  const setUserId = useSetRecoilState(userIdState);
 
   // Navigate to the main page after successful login
   useEffect(() => {
@@ -27,9 +32,10 @@ export default function LoginSignupComponent() {
     if (page === 'login') {
       try {
         // Login with Cognito
-        await signIn({username, password});
+        const signInOutput = await signIn({username, password});
         alert('Login successful!');
         setIsAuthenticated(true);
+        // setUserId(signInOutput.userId);
         setPage('main'); // Navigate to the main page
       } catch (err:any) {
         console.error('Login error:', err);
