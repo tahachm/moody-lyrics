@@ -38,7 +38,7 @@ def user_ranks():
     
 
 @routes.route('/', methods=['GET'])
-def user_ranks():
+def test():
     """
     API route to get user ranks based on recommendations received.
     """
