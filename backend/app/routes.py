@@ -35,3 +35,14 @@ def user_ranks():
         return jsonify(data), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+
+@routes.route('/', methods=['GET'])
+def user_ranks():
+    """
+    API route to get user ranks based on recommendations received.
+    """
+    try:
+        return jsonify({"data":"Hello World"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
