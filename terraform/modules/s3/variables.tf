@@ -8,3 +8,7 @@ variable "oai_arn" {
   type        = string
 }
 
+variable "alb_dns_name" {
+  description = "The DNS name of the deployed ALB."
+  type        = string
+}
