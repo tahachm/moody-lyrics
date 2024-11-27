@@ -1,0 +1,6 @@
+region             = "us-east-1"
+lambda_function_name = "StoreLLMResponse"
+db_host            = "song-app-database.cl62q84m43g3.us-east-1.rds.amazonaws.com"
+db_user            = "postgres"
+db_pass            = "masterSongDB1."
+db_name            = "song-app-database"
