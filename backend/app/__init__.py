@@ -1,16 +1,21 @@
 from flask import Flask
 from flask import jsonify
 import psycopg2
+import os
 
 def create_app():
     app = Flask(__name__)
     
     # Configuration
-    app.config['DB_HOST'] = 'database-1.cluster-ctwkoq0ogzgp.us-east-1.rds.amazonaws.com' #'localhost' # Change if running on a different host
-    app.config['DB_NAME'] = 'music_db'   # Replace with your database name
-    app.config['DB_USER'] = 'postgres'   # Replace with your DB username
-    app.config['DB_PASSWORD'] = 'mustafa1441'  # Replace with your DB password
-    
+    db_host = os.getenv('DB_HOST', 'localhost')
+    db_host_parts = db_host.split(':') if ':' in db_host else [db_host, '5432']
+
+    app.config['DB_HOST'] = db_host_parts[0]
+    app.config['DB_PORT'] = int(db_host_parts[1])  # Use the default port 5432 if not specified
+    app.config['DB_NAME'] = os.getenv('DB_NAME', 'music_db')
+    app.config['DB_USER'] = os.getenv('DB_USER', 'postgres')
+    app.config['DB_PASSWORD'] = os.getenv('DB_PASSWORD', 'securepassword123')
+
     return app
 
 # Database connection

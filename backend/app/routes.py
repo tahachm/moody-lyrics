@@ -12,7 +12,7 @@ def mood_frequencies():
         data = get_mood_frequencies()
         return jsonify(data), 200
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": str(e)}), 200
 
 @routes.route('/api/song-frequencies', methods=['GET'])
 def song_frequencies():
@@ -23,7 +23,7 @@ def song_frequencies():
         data = get_song_frequencies()
         return jsonify(data), 200
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": str(e)}), 200
 
 @routes.route('/api/user-ranks', methods=['GET'])
 def user_ranks():
@@ -33,5 +33,16 @@ def user_ranks():
     try:
         data = get_user_ranks()
         return jsonify(data), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 200
+    
+
+@routes.route('/', methods=['GET'])
+def test():
+    """
+    API route to get user ranks based on recommendations received.
+    """
+    try:
+        return jsonify({"data":"Hello World"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500

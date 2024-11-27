@@ -3,9 +3,9 @@ import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signIn, signUp, confirmSignUp,fetchUserAttributes, signOut } from '@aws-amplify/auth';
-import { useAuth } from "../auth";
-import { useSetRecoilState } from "recoil";
-import { userIdState } from "../recoil/atoms";
+import { useRecoilState } from "recoil";
+import { userIdState, isAuthenticatedState, userNameState} from "../recoil/atoms";
+
 
 export default function LoginSignupComponent() {
   const [page, setPage] = useState('login'); // Default to login
@@ -14,8 +14,11 @@ export default function LoginSignupComponent() {
   const [confirmationCode, setConfirmationCode] = useState(''); // For confirm signup
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { setIsAuthenticated } = useAuth();
-  const setUserId = useSetRecoilState(userIdState);
+  // const { setIsAuthenticated } = useAuth();
+  const [, setUserId] = useRecoilState(userIdState);
+  const [, setIsAuthenticated] = useRecoilState(isAuthenticatedState);
+  const [, setUserName] = useRecoilState(userNameState);
+
 
   // Navigate to the main page after successful login
   useEffect(() => {
@@ -40,8 +43,9 @@ export default function LoginSignupComponent() {
         }
 
         const user_ats = await fetchUserAttributes();
-
-        setUserId((user_ats?.sub as string))
+        console.log(user_ats);
+        setUserId((user_ats?.sub as string));
+        setUserName((user_ats?.email as string));
         alert('Login successful!');
         setIsAuthenticated(true);
         setPage('main'); // Navigate to the main page
@@ -82,6 +86,9 @@ export default function LoginSignupComponent() {
 
   useEffect(()=>{
     signOut();
+    setIsAuthenticated(false);
+    setUserId(null);
+    setUserName(null);
   },[])
 
   return (
