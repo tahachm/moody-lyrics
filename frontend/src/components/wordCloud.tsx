@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Text } from '@visx/text';
 import { scaleLog } from '@visx/scale';
 import Wordcloud from '@visx/wordcloud/lib/Wordcloud';
@@ -48,71 +48,97 @@ const fixedValueGenerator = () => 0.5;
 
 type SpiralType = 'archimedean' | 'rectangular';
 
-export default function Example({ width, height, showControls }: ExampleProps) {
+export default function WordCloud({ width, height, showControls }: ExampleProps) {
   const [spiralType, setSpiralType] = useState<SpiralType>('archimedean');
   const [withRotation, setWithRotation] = useState(false);
+  const [words, setWords] = useState<WordData[]>([]);
+
+
+  useEffect(() => {
+    const fetchWordData = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_APP_BACKEND_URL}/api/song-frequencies`);
+        const result = await response.json();
+        if (result.song_frequencies) {
+          // Update font scale based on the fetched data
+          const maxValue = Math.max(...result.song_frequencies.map((d: WordData) => d.value));
+          const minValue = Math.min(...result.song_frequencies.map((d: WordData) => d.value));
+          fontScale.domain([minValue, maxValue]);
+
+          // Set fetched words
+          setWords(result.song_frequencies);
+        } else {
+          console.error("Unexpected API response:", result);
+        }
+      } catch (error) {
+        console.error("Error fetching word data:", error);
+      }
+    };
+
+    fetchWordData();
+  }, []);
+
 
   return (
     <>
-    <div className='text-center'>
+      <div className='text-center'>
         <h1 className='text-5xl font-bold mb-8 text-white'>Most Looked Up Songs</h1>
-    </div>
-    <div className="wordcloud !w-full !justify-center">
-      <Wordcloud
-        words={words}
-        width={width}
-        height={height}
-        fontSize={fontSizeSetter}
-        font={'Impact'}
-        padding={2}
-        spiral={spiralType}
-        rotate={withRotation ? getRotationDegree : 0}
-        random={fixedValueGenerator}
-      >
-        {(cloudWords) =>
-          cloudWords.map((w, i) => (
-            <Text
-              key={w.text}
-              fill={colors[i % colors.length]}
-              textAnchor={'middle'}
-              transform={`translate(${w.x}, ${w.y}) rotate(${w.rotate})`}
-              fontSize={w.size}
-              fontFamily={w.font}
-            >
-              {w.text}
-            </Text>
-          ))
-        }
-      </Wordcloud>
-      {showControls && (
-        <div>
-          <label>
-            Spiral type &nbsp;
-            <select
-              onChange={(e) => setSpiralType(e.target.value as SpiralType)}
-              value={spiralType}
-            >
-              <option key={'archimedean'} value={'archimedean'}>
-                archimedean
-              </option>
-              <option key={'rectangular'} value={'rectangular'}>
-                rectangular
-              </option>
-            </select>
-          </label>
-          <label>
-            With rotation &nbsp;
-            <input
-              type="checkbox"
-              checked={withRotation}
-              onChange={() => setWithRotation(!withRotation)}
-            />
-          </label>
-          <br />
-        </div>
-      )}
-    </div>
+      </div>
+      <div className="wordcloud !w-full !justify-center">
+        <Wordcloud
+          words={words}
+          width={width}
+          height={height}
+          fontSize={fontSizeSetter}
+          font={'Impact'}
+          padding={2}
+          spiral={spiralType}
+          rotate={withRotation ? getRotationDegree : 0}
+          random={fixedValueGenerator}
+        >
+          {(cloudWords) =>
+            cloudWords.map((w, i) => (
+              <Text
+                key={w.text}
+                fill={colors[i % colors.length]}
+                textAnchor={'middle'}
+                transform={`translate(${w.x}, ${w.y}) rotate(${w.rotate})`}
+                fontSize={w.size}
+                fontFamily={w.font}
+              >
+                {w.text}
+              </Text>
+            ))
+          }
+        </Wordcloud>
+        {showControls && (
+          <div>
+            <label>
+              Spiral type &nbsp;
+              <select
+                onChange={(e) => setSpiralType(e.target.value as SpiralType)}
+                value={spiralType}
+              >
+                <option key={'archimedean'} value={'archimedean'}>
+                  archimedean
+                </option>
+                <option key={'rectangular'} value={'rectangular'}>
+                  rectangular
+                </option>
+              </select>
+            </label>
+            <label>
+              With rotation &nbsp;
+              <input
+                type="checkbox"
+                checked={withRotation}
+                onChange={() => setWithRotation(!withRotation)}
+              />
+            </label>
+            <br />
+          </div>
+        )}
+      </div>
     </>
-    
   );
 }

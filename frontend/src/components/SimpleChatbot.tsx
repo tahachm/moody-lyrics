@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { generateText } from "ai";
 import { createOpenAI as createGroq } from "@ai-sdk/openai";
-// import { userIdState } from "../recoil/atoms"; //uncomment this line once login signup is successfully implemented
-// import { useRecoilValue } from "recoil"; //uncomment this line once login signup is successfully implemented
+import { userIdState } from "../recoil/atoms"; //uncomment this line once login signup is successfully implemented
+import { useRecoilValue } from "recoil"; //uncomment this line once login signup is successfully implemented
 import "./SimpleChatbot.css";
 
 
@@ -21,8 +21,8 @@ const SimpleChatbot = () => {
       apiKey: import.meta.env.VITE_APP_GROQ_API_KEY,
     });
 
-    // const userId = useRecoilValue(userIdState); //uncomment this line once login signup is successfully implemented
-    const userId = "7"; //comment this temporary line once login signup is successfully implemented
+    const userId = useRecoilValue(userIdState); //uncomment this line once login signup is successfully implemented
+    // const userId = "7"; //comment this temporary line once login signup is successfully implemented
 
     try {
       const { text } = await generateText({

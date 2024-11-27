@@ -2,8 +2,10 @@ import "./App.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import SimpleChatbot from "./components/SimpleChatbot";
 import NavbarComp from "./components/NavbarComp";
-import TrendingSection from "./components/TrendingSection";
-import Example from "./components/wordCloud";
+import TrendingSectionStatic from "./components/TrendingSectionStatic";
+// import TrendingSection from "./components/TrendingSection"; // UnComment this line when DB is connected to EC2
+import Example from "./components/wordCloudSample";
+// import WordCloud from "./components/wordCloud"; // UnComment this line when DB is connected to EC2
 import SuggestedSongs from "./RecentSuggestions";
 import LoginSignupComponent from "./components/loginSignupComponent";
 import { AuthProvider } from "./auth";
@@ -29,8 +31,10 @@ const App: React.FC = () => {
                       <NavbarComp />
                       <SimpleChatbot />
                       <SuggestedSongs />
-                      <TrendingSection />
-                      <Example width={500} height={500} />
+                      <TrendingSectionStatic />
+                      {/* <TrendingSection /> */}
+                      <Example width={500} height={500} /> {/* Comment this line when DB is connected to EC2 */}
+                      {/* <WordCloud width={500} height={500} /> */}  {/* UnComment this line when DB is connected to EC2 */}
                     </div>
                   }
                 />

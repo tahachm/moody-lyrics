@@ -14,7 +14,6 @@ export default function LoginSignupComponent() {
   const [confirmationCode, setConfirmationCode] = useState(''); // For confirm signup
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  // const { setIsAuthenticated } = useAuth();
   const [, setUserId] = useRecoilState(userIdState);
   const [, setIsAuthenticated] = useRecoilState(isAuthenticatedState);
   const [, setUserName] = useRecoilState(userNameState);
