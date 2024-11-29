@@ -7,9 +7,12 @@ const pool = new Pool(DB_CONFIG);
 
 // Lambda handler
 const lambdaHandler = async (event) => {
+    console.log('Step 0: Starting Lambda function execution...');
     const client = await pool.connect();
+    console.log('Step 1: Database connection established.');
 
     try {
+        console.log('Step 2: Parsing input...');
         const body = JSON.parse(event.body);
         const userId = body.userId;
         const llmResponse = body.llmResponse;
@@ -22,10 +25,11 @@ const lambdaHandler = async (event) => {
         const inputMessage = event.queryStringParameters.prompt;
         const responseMessage = llmResponse.message;
 
-        // Begin a transaction
+        console.log('Step 3: Starting transaction...');
         await client.query('BEGIN');
 
-        // Step 1: Ensure user exists in the `users` table
+        // Step 4: Ensure user exists in the `users` table
+        console.log('Step 4: Checking if user exists...');
         const userCheckResult = await client.query(
             `
             SELECT id FROM users WHERE id = $1
@@ -34,7 +38,7 @@ const lambdaHandler = async (event) => {
         );
 
         if (userCheckResult.rows.length === 0) {
-            // Insert user if not found
+            console.log('Step 4.1: User not found. Inserting new user...');
             await client.query(
                 `
                 INSERT INTO users (id, cognito_sub, username, email)
@@ -42,9 +46,12 @@ const lambdaHandler = async (event) => {
                 `,
                 [userId, `cognito_${userId}`, `user_${userId}`, `user_${userId}@example.com`]
             );
+        } else {
+            console.log('Step 4.2: User exists.');
         }
 
-        // Step 2: Check if the song already exists
+        // Step 5: Check if the song already exists
+        console.log('Step 5: Checking if song exists...');
         const songCheckResult = await client.query(
             `
             SELECT id FROM songs
@@ -55,7 +62,7 @@ const lambdaHandler = async (event) => {
 
         let songId;
         if (songCheckResult.rows.length > 0) {
-            // Song already exists
+            console.log('Step 5.1: Song exists. Updating genre if necessary...');
             songId = songCheckResult.rows[0].id;
 
             // Optionally update genre if it's null or different
@@ -68,7 +75,7 @@ const lambdaHandler = async (event) => {
                 [genre, songId]
             );
         } else {
-            // Insert new song
+            console.log('Step 5.2: Song not found. Inserting new song...');
             const songInsertResult = await client.query(
                 `
                 INSERT INTO songs (song_name, artist, album, genre)
@@ -80,7 +87,8 @@ const lambdaHandler = async (event) => {
             songId = songInsertResult.rows[0].id;
         }
 
-        // Step 3: Insert LLM response into the `llm_responses` table
+        // Step 6: Insert LLM response into the `llm_responses` table
+        console.log('Step 6: Inserting LLM response...');
         const llmResponseResult = await client.query(
             `
             INSERT INTO llm_responses (user_id, input_message, response_message, song_id)
@@ -91,9 +99,10 @@ const lambdaHandler = async (event) => {
         );
         const llmResponseId = llmResponseResult.rows[0].id;
 
-        // Step 4: Insert mood tags into the `moods` and `llm_response_moods` tables
+        // Step 7: Insert mood tags into the `moods` and `llm_response_moods` tables
+        console.log('Step 7: Processing mood tags...');
         for (const mood of moodTags) {
-            // Check if the mood already exists
+            console.log(`Step 7.1: Checking if mood "${mood}" exists...`);
             const moodCheckResult = await client.query(
                 `
                 SELECT id FROM moods WHERE mood = $1
@@ -103,10 +112,10 @@ const lambdaHandler = async (event) => {
 
             let moodId;
             if (moodCheckResult.rows.length > 0) {
-                // Mood already exists
+                console.log(`Step 7.2: Mood "${mood}" exists.`);
                 moodId = moodCheckResult.rows[0].id;
             } else {
-                // Insert new mood
+                console.log(`Step 7.3: Mood "${mood}" not found. Inserting new mood...`);
                 const moodInsertResult = await client.query(
                     `
                     INSERT INTO moods (mood)
@@ -118,7 +127,7 @@ const lambdaHandler = async (event) => {
                 moodId = moodInsertResult.rows[0].id;
             }
 
-            // Link the mood to the LLM response
+            console.log(`Step 7.4: Linking mood "${mood}" to the LLM response...`);
             await client.query(
                 `
                 INSERT INTO llm_response_moods (llm_response_id, mood_id)
@@ -129,9 +138,10 @@ const lambdaHandler = async (event) => {
             );
         }
 
-        // Commit the transaction
+        console.log('Step 8: Committing transaction...');
         await client.query('COMMIT');
 
+        console.log('Step 9: Returning success response...');
         return {
             statusCode: 200,
             body: JSON.stringify({ message: 'LLM response stored successfully!' })
@@ -139,7 +149,7 @@ const lambdaHandler = async (event) => {
     } catch (error) {
         console.error('Error storing LLM response:', error);
 
-        // Rollback the transaction on error
+        console.log('Rolling back transaction...');
         await client.query('ROLLBACK');
 
         return {
@@ -147,6 +157,7 @@ const lambdaHandler = async (event) => {
             body: JSON.stringify({ error: 'Failed to store LLM response.' })
         };
     } finally {
+        console.log('Releasing database connection...');
         client.release(); // Release the client back to the pool
     }
 };
