@@ -9,7 +9,7 @@ variable "region" {
 variable "bucket_name" {
   description = "Name of the S3 bucket hosting the frontend."
   type        = string
-  default     = "moody-lyrics-musa-frontend-bucket"  # Ensure this is unique across AWS
+  default     = "moody-lyrics-musa-frontend-music-test-bucket"  # Ensure this is unique across AWS
 }
 
 variable "cloudfront_aliases" {
@@ -34,6 +34,31 @@ variable "logging_prefix" {
   description = "Prefix for the CloudFront access logs."
   type        = string
   default     = "cloudfront-logs/"
+}
+
+variable "lambda_function_name" {
+  description = "Name of the Lambda function"
+  default     = "lambdaHandler"
+}
+
+variable "lambda_zip_path" {
+  description = "Path to the Lambda function ZIP file"
+  default     = "./lambda_function/lambda_function.zip" # Adjust path if needed
+}
+
+variable "lambda_handler" {
+  description = "Handler for the Lambda function"
+  default     = "song_function.default"
+}
+
+variable "lambda_runtime" {
+  description = "Runtime environment for the Lambda function"
+  default     = "nodejs20.x"
+}
+
+variable "lambda_timeout" {
+  description = "Timeout for the Lambda function in seconds"
+  default     = 15
 }
 
 

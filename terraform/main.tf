@@ -251,3 +251,59 @@ output "cognito_app_client_id" {
 output "cloudfront_domain" {
   value = module.cloudfront.cloudfront_domain_name
 }
+
+########################################################################
+
+# IAM Role for Lambda Execution
+resource "aws_iam_role" "lambda_exec_role" {
+  name = "lambda_exec_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+# Attach AWS Managed Policy for basic Lambda execution
+resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
+  role       = aws_iam_role.lambda_exec_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+# Lambda Function
+resource "aws_lambda_function" "my_lambda_function" {
+  function_name = "StoreLLMResponse"
+  role          = aws_iam_role.lambda_exec_role.arn
+  handler       = var.lambda_handler
+  runtime       = var.lambda_runtime
+  timeout       = var.lambda_timeout
+
+  # Use the local file for the Lambda function code
+  filename         = var.lambda_zip_path
+  source_code_hash = filebase64sha256(var.lambda_zip_path) # Ensure updates are detected
+
+  # Environment Variables
+  environment {
+    variables = {
+      DB_HOST = split(":", module.rds.rds_endpoint)[0] # Extracts the host part
+      DB_PORT = split(":", module.rds.rds_endpoint)[1] # Extracts the port part
+      DB_USER = module.rds.rds_username
+      DB_PASS = module.rds.rds_password
+      DB_NAME = module.rds.rds_database_name
+    }
+  }
+}
+
+# CloudWatch Log Group for Lambda Logs
+resource "aws_cloudwatch_log_group" "lambda_log_group" {
+  name              = "/aws/lambda/${aws_lambda_function.my_lambda_function.function_name}"
+  retention_in_days = 7 # Adjust as needed
+}
