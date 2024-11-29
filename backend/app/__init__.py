@@ -66,6 +66,48 @@ TABLES = [
     """
 ]
 
+DUMMY_DATA = [
+    """
+    INSERT INTO users (cognito_sub, username, email)
+    VALUES 
+        ('sub-12345', 'john_doe', 'john.doe@example.com'),
+        ('sub-67890', 'jane_smith', 'jane.smith@example.com')
+    ON CONFLICT (cognito_sub) DO NOTHING;
+    """,
+    """
+    INSERT INTO songs (song_name, artist, album, genre)
+    VALUES 
+        ('Happy', 'Pharrell Williams', 'G I R L', 'Pop'),
+        ('Weightless', 'Marconi Union', NULL, 'Ambient')
+    ON CONFLICT DO NOTHING;
+    """,
+    """
+    INSERT INTO moods (mood)
+    VALUES 
+        ('happy'), 
+        ('energetic'), 
+        ('calm'), 
+        ('sad')
+    ON CONFLICT (mood) DO NOTHING;
+    """,
+    """
+    INSERT INTO llm_responses (user_id, input_message, response_message, song_id)
+    VALUES 
+        (1, 'I feel like celebrating today!', 'Try listening to "Happy"!', 1),
+        (2, 'I need something relaxing.', 'How about "Weightless"?', 2)
+    ON CONFLICT DO NOTHING;
+    """,
+    """
+    INSERT INTO llm_response_moods (llm_response_id, mood_id)
+    VALUES 
+        (1, 1), 
+        (1, 2), 
+        (2, 3), 
+        (2, 4)
+    ON CONFLICT DO NOTHING;
+    """
+]
+
 def create_tables():
     try:
         # Connect to the database
@@ -81,6 +123,27 @@ def create_tables():
         print("Tables created successfully.")
     except Exception as e:
         print(f"Error creating tables: {e}")
+    finally:
+        if cursor:
+            cursor.close()
+        if connection:
+            connection.close()
+
+def insert_dummy_data():
+    try:
+        # Connect to the database
+        connection = get_db_connection()
+        cursor = connection.cursor()
+
+        # Insert dummy data
+        for data_sql in DUMMY_DATA:
+            cursor.execute(data_sql)
+        
+        # Commit changes
+        connection.commit()
+        print("Dummy data inserted successfully.")
+    except Exception as e:
+        print(f"Error inserting dummy data: {e}")
     finally:
         if cursor:
             cursor.close()
