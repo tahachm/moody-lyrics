@@ -12,3 +12,8 @@ variable "public_subnet_ids" {
   description = "List of public subnet IDs for the ALB"
   type        = list(string)
 }
+
+variable "aws_acm_certificate" {
+  description = "List of public subnet IDs for the ALB"
+  type        = string
+}

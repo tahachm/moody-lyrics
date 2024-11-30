@@ -152,12 +152,18 @@ module "security_group" {
   vpc_id      = aws_vpc.app_vpc.id
 }
 
+resource "aws_acm_certificate" "self_signed" {
+  private_key      = file("selfsigned.key")  # Path to private key
+  certificate_body = file("selfsigned.crt") # Path to certificate
+}
+
 # Application Load Balancer
 module "alb" {
   source              = "./modules/alb"
   vpc_id              = aws_vpc.app_vpc.id
   security_group_id   = module.security_group.alb_security_group_id
   public_subnet_ids   = [aws_subnet.public_subnet_1.id, aws_subnet.public_subnet_2.id]
+  aws_acm_certificate = aws_acm_certificate.self_signed.arn
 }
 
 # Auto Scaling Group
