@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from flask import jsonify
 import psycopg2
 import os
@@ -16,6 +17,7 @@ def create_app():
     app.config['DB_USER'] = os.getenv('DB_USER', 'postgres')
     app.config['DB_PASSWORD'] = os.getenv('DB_PASSWORD', 'securepassword123')
 
+    CORS(app, resources={r"/*": {"origins": "*"}})
     return app
 
 # SQL commands to create tables
