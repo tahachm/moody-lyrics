@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { Crown } from "lucide-react";
-import { userIdState } from "../recoil/atoms";
+import { userIdState, userNameState } from "../recoil/atoms";
 import { useRecoilValue } from "recoil";
 
 interface UserRank {
-  username: string;
+  text: string;
   rank: number;
-  response_count: number;
+  value: number;
 }
 
 interface MoodFrequency {
@@ -21,6 +21,7 @@ function TrendingSection() {
   const [topUser, setTopUser] = useState<UserRank | null>(null);
   const [moods, setMoods] = useState<MoodFrequency[]>([]);
   const userId = useRecoilValue(userIdState);
+  const userName = useRecoilValue(userNameState);
 
   useEffect(() => {
     // Fetch user ranks
@@ -30,10 +31,10 @@ function TrendingSection() {
           `${import.meta.env.VITE_APP_BACKEND_URL}/api/user-ranks`
         );
         const result = await response.json();
-        if (result.user_ranks) {
+        if (result) {
           // Find the current user from user ranks
-          const currentUser = result.user_ranks.find(
-            (user: UserRank) => user.username === userId
+          const currentUser = result.find(
+            (user: UserRank) => user.text === userName
           );
           setTopUser(currentUser || null);
         }
@@ -49,9 +50,9 @@ function TrendingSection() {
           `${import.meta.env.VITE_APP_BACKEND_URL}/api/mood-frequencies`
         );
         const result = await response.json();
-        if (result.mood_frequencies) {
+        if (result) {
           // Sort moods by value in descending order
-          const sortedMoods = result.mood_frequencies.sort(
+          const sortedMoods = result.sort(
             (a: MoodFrequency, b: MoodFrequency) => b.value - a.value
           );
           setMoods(sortedMoods);
@@ -94,7 +95,7 @@ function TrendingSection() {
               <>
                 <div className="flex items-center gap-3">
                   <Crown className="h-6 w-6 text-yellow-400" />
-                  <span className="text-lg font-semibold">{topUser.username}</span>
+                  <span className="text-lg font-semibold">{topUser.text}</span>
                 </div>
                 <div className="bg-white bg-opacity-20 px-3 py-1 rounded-full">
                   <span className="text-sm font-medium">

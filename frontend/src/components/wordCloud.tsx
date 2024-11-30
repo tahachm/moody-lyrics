@@ -59,14 +59,15 @@ export default function WordCloud({ width, height, showControls }: ExampleProps)
       try {
         const response = await fetch(`${import.meta.env.VITE_APP_BACKEND_URL}/api/song-frequencies`);
         const result = await response.json();
-        if (result.song_frequencies) {
+        console.log(result);
+        if (result) {
           // Update font scale based on the fetched data
-          const maxValue = Math.max(...result.song_frequencies.map((d: WordData) => d.value));
-          const minValue = Math.min(...result.song_frequencies.map((d: WordData) => d.value));
+          const maxValue = Math.max(...result.map((d: WordData) => d.value));
+          const minValue = Math.min(...result.map((d: WordData) => d.value));
           fontScale.domain([minValue, maxValue]);
 
           // Set fetched words
-          setWords(result.song_frequencies);
+          setWords(result);
         } else {
           console.error("Unexpected API response:", result);
         }
