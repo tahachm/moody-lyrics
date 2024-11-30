@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Crown } from "lucide-react";
+import { Crown, Medal, Trophy } from 'lucide-react';
 import { userIdState, userNameState } from "../recoil/atoms";
 import { useRecoilValue } from "recoil";
 
@@ -18,10 +18,20 @@ interface MoodFrequency {
 function TrendingSection() {
 
 
-  const [topUser, setTopUser] = useState<UserRank | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserRank | null>(null);
+  const [topUsers, setTopUsers] = useState<UserRank[]>([]);
   const [moods, setMoods] = useState<MoodFrequency[]>([]);
   const userId = useRecoilValue(userIdState);
   const userName = useRecoilValue(userNameState);
+
+  const rankIcons = [
+    <Crown key={1} className="h-6 w-6 text-yellow-400" />,
+    <Medal key={2} className="h-6 w-6 text-gray-400" />,
+    <Trophy key={3} className="h-6 w-6 text-amber-600" />,
+    <svg key={4} xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  ];
 
   useEffect(() => {
     // Fetch user ranks
@@ -33,10 +43,12 @@ function TrendingSection() {
         const result = await response.json();
         if (result) {
           // Find the current user from user ranks
+          result.sort((a: UserRank, b: UserRank) => a.rank - b.rank);
           const currentUser = result.find(
             (user: UserRank) => user.text === userName
           );
-          setTopUser(currentUser || null);
+          setCurrentUser(currentUser || null);
+          setTopUsers(result.slice(0, 3));
         }
       } catch (error) {
         console.error("Error fetching user ranks:", error);
@@ -68,6 +80,7 @@ function TrendingSection() {
 
 
   return (
+    
     <section className="mb-10">
       <div className="flex items-center gap-2 mb-6">
         <svg
@@ -89,27 +102,56 @@ function TrendingSection() {
       <div className="grid gap-4 md:grid-cols-2">
         {/* User Ranking Section */}
         <div className="bg-gradient-to-br from-fuchsia-500 to-cyan-500 bg-opacity-10 rounded-lg p-6">
-          <h3 className="text-lg font-medium mb-4">User Ranking</h3>
-          <div className="flex items-center justify-between bg-white bg-opacity-10 rounded-lg p-4">
-            {topUser ? (
-              <>
-                <div className="flex items-center gap-3">
-                  <Crown className="h-6 w-6 text-yellow-400" />
-                  <span className="text-lg font-semibold">{topUser.text}</span>
-                </div>
-                <div className="bg-white bg-opacity-20 px-3 py-1 rounded-full">
-                  <span className="text-sm font-medium">
-                    Rank #{topUser.rank}
-                  </span>
-                </div>
-              </>
-            ) : (
-              <span className="text-sm font-medium text-gray-400">
-                Loading user ranking...
-              </span>
-            )}
+  <h3 className="text-lg font-medium mb-4">User Rankings</h3>
+  {/* Scrollable container for showing only 2 rankings at once */}
+  <div className="space-y-3 max-h-32 overflow-y-auto">
+    {topUsers.length > 0 ? (
+      <>
+        {topUsers.map((user, index) => (
+          <div
+            key={user.rank}
+            className="flex items-center justify-between bg-white bg-opacity-10 rounded-lg p-3"
+          >
+            <div className="flex items-center gap-2">
+              {rankIcons[index]}
+              <span className="text-sm font-semibold">{user.text}</span>
+              {user.text === userName && (
+                <span className="text-xs font-medium text-cyan-400">(You)</span>
+              )}
+            </div>
+            <div className="bg-white bg-opacity-20 px-2 py-1 rounded-full">
+              <span className="text-xs font-medium">Rank #{user.rank}</span>
+            </div>
           </div>
-        </div>
+        ))}
+        {/* Show current user if not in top 3 */}
+        {currentUser &&
+          !topUsers.some((user) => user.text === currentUser.text) && (
+            <div className="flex items-center justify-between bg-white bg-opacity-10 rounded-lg p-3">
+              <div className="flex items-center gap-2">
+                {rankIcons[3]}
+                <span className="text-sm font-semibold">
+                  {currentUser.text}
+                </span>
+                <span className="text-xs font-medium text-cyan-400">(You)</span>
+              </div>
+              <div className="bg-white bg-opacity-20 px-2 py-1 rounded-full">
+                <span className="text-xs font-medium">
+                  Rank #{currentUser.rank}
+                </span>
+              </div>
+            </div>
+          )}
+      </>
+    ) : (
+      <span className="text-sm font-medium text-gray-400">
+        Loading user rankings...
+      </span>
+    )}
+  </div>
+</div>
+
+
 
         {/* Popular Moods Section */}
         <div className="bg-gradient-to-br from-fuchsia-500 to-cyan-500 bg-opacity-10 rounded-lg p-6">
