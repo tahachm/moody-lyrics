@@ -3,7 +3,10 @@ const DB_CONFIG = {
     port: process.env.DB_PORT,       // Database port
     user: process.env.DB_USER,       // Database user
     password: process.env.DB_PASS,   // Database password
-    database: process.env.DB_NAME    // Database name
+    database: process.env.DB_NAME,    // Database name
+    ssl: {
+        rejectUnauthorized: false, // Use false unless you have a custom CA certificate
+      },
 };
 
 export default DB_CONFIG;

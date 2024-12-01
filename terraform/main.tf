@@ -195,17 +195,15 @@ module "rds" {
 
 ##################################################################
 
-
-# IAM Role for Lambda Execution
 resource "aws_iam_role" "lambda_exec_role" {
   name = "lambda_exec_role"
 
   assume_role_policy = jsonencode({
-    Version = "2012-10-17"
+    Version = "2012-10-17",
     Statement = [
       {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
+        Action = "sts:AssumeRole",
+        Effect = "Allow",
         Principal = {
           Service = "lambda.amazonaws.com"
         }
@@ -214,11 +212,36 @@ resource "aws_iam_role" "lambda_exec_role" {
   })
 }
 
+resource "aws_iam_role_policy" "lambda_vpc_permissions" {
+  name = "LambdaVpcPermissions"
+  role = aws_iam_role.lambda_exec_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect   = "Allow",
+        Action   = [
+          "ec2:CreateNetworkInterface",
+          "ec2:DescribeNetworkInterfaces",
+          "ec2:DeleteNetworkInterface",
+          "ec2:AssignPrivateIpAddresses",
+          "ec2:UnassignPrivateIpAddresses"
+        ],
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+
+
 # Attach AWS Managed Policy for basic Lambda execution
 resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
   role       = aws_iam_role.lambda_exec_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
+
 
 # Lambda Function
 resource "aws_lambda_function" "my_lambda_function" {
@@ -227,6 +250,12 @@ resource "aws_lambda_function" "my_lambda_function" {
   handler       = var.lambda_handler
   runtime       = var.lambda_runtime
   timeout       = var.lambda_timeout
+
+  # Attach Lambda to VPC
+  vpc_config {
+    subnet_ids         = [aws_subnet.private_subnet_1.id, aws_subnet.private_subnet_2.id]
+    security_group_ids = [module.security_group.lambda_security_group_id]
+  }
 
   # Use the local file for the Lambda function code
   filename         = var.lambda_zip_path
@@ -242,13 +271,85 @@ resource "aws_lambda_function" "my_lambda_function" {
       DB_NAME = module.rds.rds_database_name
     }
   }
+
+  # Ensure Lambda waits for RDS and Security Group creation
+  depends_on = [
+  module.security_group,
+  module.rds
+]
+
 }
+
 
 # CloudWatch Log Group for Lambda Logs
 resource "aws_cloudwatch_log_group" "lambda_log_group" {
   name              = "/aws/lambda/${aws_lambda_function.my_lambda_function.function_name}"
   retention_in_days = 7 # Adjust as needed
 }
+
+# API Gateway - HTTP API
+resource "aws_apigatewayv2_api" "lambda_api" {
+  name          = "music-app-api"
+  protocol_type = "HTTP"
+
+  description = "API Gateway for Music App Lambda function"
+  
+  cors_configuration {
+    allow_origins     = ["*"] # Replace '*' with your frontend domain in production, e.g., "https://your-frontend-domain.com"
+    allow_methods     = ["GET", "POST", "OPTIONS"]
+    allow_headers     = ["Content-Type", "Authorization"]
+    expose_headers    = []
+    max_age           = 3600
+    allow_credentials = false
+  }
+}
+
+# API Gateway Integration with Lambda
+resource "aws_apigatewayv2_integration" "lambda_integration" {
+  api_id             = aws_apigatewayv2_api.lambda_api.id
+  integration_type   = "AWS_PROXY"
+  integration_uri    = aws_lambda_function.my_lambda_function.invoke_arn
+  integration_method = "POST"
+  payload_format_version = "2.0"
+
+}
+
+# Define a Route
+resource "aws_apigatewayv2_route" "default_route" {
+  api_id    = aws_apigatewayv2_api.lambda_api.id
+  route_key = "ANY /{proxy+}"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
+}
+
+# Deploy the API
+resource "aws_apigatewayv2_stage" "default_stage" {
+  api_id      = aws_apigatewayv2_api.lambda_api.id
+  name        = "prod"
+  auto_deploy = true
+
+  default_route_settings {
+    throttling_burst_limit = 500
+    throttling_rate_limit  = 1000
+  }
+}
+
+# Allow API Gateway to invoke Lambda
+resource "aws_lambda_permission" "api_gateway_permission" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.my_lambda_function.function_name
+  principal     = "apigateway.amazonaws.com"
+
+  # The source ARN should match the API and stage
+  source_arn = "${aws_apigatewayv2_api.lambda_api.execution_arn}/*/*"
+}
+
+# Optional: Output the API URL
+output "api_endpoint" {
+  value = "${aws_apigatewayv2_api.lambda_api.api_endpoint}/${aws_apigatewayv2_stage.default_stage.name}"
+  description = "The endpoint of the API Gateway"
+}
+
 
 ##################################################################
 

@@ -11,6 +11,11 @@ const SimpleChatbot = () => {
   const [responseJson, setResponseJson] = useState<any>(null);
   const [errorMessage, setErrorMessage] = useState("");
 
+  const userId = useRecoilValue(userIdState); //uncomment this line once login signup is successfully implemented
+    // const userId = "7"; //comment this temporary line once login signup is successfully implemented
+  const username = "example_user";
+  const email = "example_user@gmail.com";
+
   const handleInputChange = (e: any) => {
     setUserInput(e.target.value);
   };
@@ -20,9 +25,6 @@ const SimpleChatbot = () => {
       baseURL: "https://api.groq.com/openai/v1",
       apiKey: import.meta.env.VITE_APP_GROQ_API_KEY,
     });
-
-    const userId = useRecoilValue(userIdState); //uncomment this line once login signup is successfully implemented
-    // const userId = "7"; //comment this temporary line once login signup is successfully implemented
 
     try {
       const { text } = await generateText({
@@ -73,7 +75,10 @@ const SimpleChatbot = () => {
             },
             body: JSON.stringify({
               userId,
+              username,
+              email,
               llmResponse: extractedJson,
+              prompt: userInput,
             }),
           });
         } catch (apiError) {

@@ -9,7 +9,7 @@ variable "region" {
 variable "bucket_name" {
   description = "Name of the S3 bucket hosting the frontend."
   type        = string
-  default     = "moody-lyrics-musa-frontend-music-test-bucket"  # Ensure this is unique across AWS
+  default     = "moody-lyrics-ahmad-frontend-music-test-bucket"  # Ensure this is unique across AWS
 }
 
 variable "cloudfront_aliases" {

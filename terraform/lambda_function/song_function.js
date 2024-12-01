@@ -7,22 +7,41 @@ const pool = new Pool(DB_CONFIG);
 
 // Lambda handler
 const lambdaHandler = async (event) => {
-    console.log('Step 0: Starting Lambda function execution...');
+    console.log('Event received:', event);
+
+    // Handle OPTIONS preflight requests
+    if (event.httpMethod === "OPTIONS") {
+        console.log('Handling OPTIONS preflight request...');
+        return {
+            statusCode: 200,
+            headers: {
+                "Access-Control-Allow-Origin": "*", // Replace '*' with your frontend domain in production
+                "Access-Control-Allow-Methods": "OPTIONS,POST,GET", // Allowed methods
+                "Access-Control-Allow-Headers": "Content-Type, Authorization", // Allowed headers
+            },
+            body: null, // No body needed for OPTIONS response
+        };
+    }
+
+    // Proceed with handling POST requests
     const client = await pool.connect();
     console.log('Step 1: Database connection established.');
 
     try {
         console.log('Step 2: Parsing input...');
         const body = JSON.parse(event.body);
-        const userId = body.userId;
-        const llmResponse = body.llmResponse;
+        const { userId, username, email, llmResponse, prompt } = body;
+
+        if (!userId || !username || !email) {
+            throw new Error("Missing required fields: userId, username, or email.");
+        }
 
         const songName = llmResponse.song.name;
         const artist = llmResponse.song.artist;
         const album = llmResponse.song.album || 'None';
         const genre = llmResponse.song.genre || null;
         const moodTags = llmResponse.song.mood_tags || [];
-        const inputMessage = event.queryStringParameters.prompt;
+        const inputMessage = prompt;
         const responseMessage = llmResponse.message;
 
         console.log('Step 3: Starting transaction...');
@@ -44,7 +63,7 @@ const lambdaHandler = async (event) => {
                 INSERT INTO users (id, cognito_sub, username, email)
                 VALUES ($1, $2, $3, $4)
                 `,
-                [userId, `cognito_${userId}`, `user_${userId}`, `user_${userId}@example.com`]
+                [userId, `cognito_${userId}`, username, email]
             );
         } else {
             console.log('Step 4.2: User exists.');
@@ -144,7 +163,12 @@ const lambdaHandler = async (event) => {
         console.log('Step 9: Returning success response...');
         return {
             statusCode: 200,
-            body: JSON.stringify({ message: 'LLM response stored successfully!' })
+            headers: {
+                "Access-Control-Allow-Origin": "*", // Replace '*' with your frontend domain in production
+                "Access-Control-Allow-Methods": "OPTIONS,POST,GET", // Allowed methods
+                "Access-Control-Allow-Headers": "Content-Type, Authorization", // Allowed headers
+            },
+            body: JSON.stringify({ message: 'LLM response stored successfully!' }),
         };
     } catch (error) {
         console.error('Error storing LLM response:', error);
@@ -154,7 +178,12 @@ const lambdaHandler = async (event) => {
 
         return {
             statusCode: 500,
-            body: JSON.stringify({ error: 'Failed to store LLM response.' })
+            headers: {
+                "Access-Control-Allow-Origin": "*", // Replace '*' with your frontend domain in production
+                "Access-Control-Allow-Methods": "OPTIONS,POST,GET",
+                "Access-Control-Allow-Headers": "Content-Type, Authorization",
+            },
+            body: JSON.stringify({ error: error || 'Failed to store LLM response.' }),
         };
     } finally {
         console.log('Releasing database connection...');
