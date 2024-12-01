@@ -390,6 +390,7 @@ module "s3" {
   bucket_name        = var.bucket_name
   oai_arn            = module.cloudfront.origin_access_identity_arn  # Pass OAI ARN from CloudFront
   alb_dns_name       = module.alb.alb_dns_name
+  lambda_url         = "${aws_apigatewayv2_api.lambda_api.api_endpoint}/${aws_apigatewayv2_stage.default_stage.name}"
 
   # Ensure S3 waits for aws-exports.ts
   depends_on = [local_file.aws_exports]

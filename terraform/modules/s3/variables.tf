@@ -12,3 +12,8 @@ variable "alb_dns_name" {
   description = "The DNS name of the deployed ALB."
   type        = string
 }
+
+variable "lambda_url" {
+  description = "The url of the deployed Lambda Function."
+  type        = string
+}
