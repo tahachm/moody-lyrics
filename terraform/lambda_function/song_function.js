@@ -8,9 +8,8 @@ const pool = new Pool(DB_CONFIG);
 // Lambda handler
 const lambdaHandler = async (event) => {
     console.log('Event received:', event);
-
     // Handle OPTIONS preflight requests
-    if (event.httpMethod === "OPTIONS") {
+    if (event.requestContext.http.method === "OPTIONS") {
         console.log('Handling OPTIONS preflight request...');
         return {
             statusCode: 200,

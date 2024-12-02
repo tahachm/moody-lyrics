@@ -43,7 +43,7 @@ resource "null_resource" "rebuild_frontend" {
   provisioner "local-exec" {
     command = <<EOT
       cd ${path.module}/../../../frontend && \
-      echo "VITE_APP_LAMBDA_URL=${var.lambda_url}" >> .env && \
+      echo "VITE_APP_LAMBDA_URL=${var.lambda_url}/" >> .env && \
       echo "VITE_APP_BACKEND_URL=https://${var.alb_dns_name}" >> .env && \
       npm install && \
       npm run build
