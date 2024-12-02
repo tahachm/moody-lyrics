@@ -9,13 +9,16 @@ interface Song {
   description: string
 }
 
+
+
 export default function SuggestedSongs() {
+
 
   const [suggestedSongs, setSuggestedSongs] = useState<Song[]>([]);
   const userId = useRecoilValue(userIdState); // Get user ID from Recoil state
   const reloadSuggestions = useRecoilValue(responseGeneratedState); // Get user ID from Recoil state
   const [loading, setLoading] = useState(false); // Loading state
-  const [error, setError] = useState<string | null>(null); // Error state
+  const [error, setError] = useState<string | null>(null); 
 
   const fetchSuggestions = async () => {
     setLoading(true);
@@ -71,68 +74,61 @@ export default function SuggestedSongs() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 space-y-12 pb-12">
-      {/* Recent Suggestions */}
-      <section>
-        <div className="flex items-center gap-2 mb-6">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 text-fuchsia-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <h2 className="text-xl font-semibold">Recently Suggested</h2>
+        {/* Recent Suggestions */}
+        <section>
+        <div className="mb-6">
+      <div className="flex items-center gap-2">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-5 w-5 text-fuchsia-400"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        <h2 className="text-xl font-semibold">Recently Suggested</h2>
+      </div>
+
+          {/* Loading state */}
+          {loading && (
+            <div className="text-center text-gray-300 mt-2">
+              Loading suggestions...
+            </div>
+          )}
+
+          {/* Error state */}
+          {error && (
+            <div className="text-center text-red-500 mt-2">
+              Error: {error}
+            </div>
+          )}
+
+          {/* No Suggestions State */}
+          {suggestedSongs.length === 0 && !loading && !error && (
+            <div className="text-center text-gray-300 mt-2">
+              No suggestions found.
+            </div>
+          )}
         </div>
 
-        {/* Loading state */}
-        {loading && (
-          <div className="text-center text-gray-300">Loading suggestions...</div>
-        )}
-
-        {/* Error state */}
-        {error && (
-          <div className="text-center text-red-500">
-            Error: {error}
-          </div>
-        )}
-
-        {/* No Suggestions State */}
-        {!loading && suggestedSongs.length === 0 && !error && (
-          <div className="text-center text-gray-300">
-            No suggestions currently!
-          </div>
-        )}
-
-        {/* Suggestions Grid */}
-        {suggestedSongs.length > 0 && (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {suggestedSongs.map((song) => (
-              <div
-                key={song.id}
+
+
+            {suggestedSongs.length>0 && suggestedSongs.map((song, i) => (
+              <div 
+                key={i} 
                 className="bg-white bg-opacity-5 rounded-lg p-4 hover:bg-opacity-10 transition-colors duration-200 cursor-pointer"
               >
                 <div className="flex items-start gap-3">
                   <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-fuchsia-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6 text-white"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
-                      />
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                     </svg>
                   </div>
                   <div>
@@ -147,10 +143,7 @@ export default function SuggestedSongs() {
               </div>
             ))}
           </div>
-        )}
-      </section>
-    </div>
-  );
-
+        </section>
+      </div>
+  )
 }
-
