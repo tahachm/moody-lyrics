@@ -67,6 +67,22 @@ const SimpleChatbot = () => {
         console.log("extracted json", extractedJson);
         try {
           // Send data to your API
+          console.log("sending data : ", JSON.stringify({
+            userId : userId, // Ensure this is a UUID string
+            username : userName, // Valid username
+            email : userName, // Valid email
+            llmResponse: {
+                song: {
+                    name: extractedJson?.song?.name || "Unknown",
+                    artist: extractedJson?.song?.artist || "Unknown",
+                    album: extractedJson?.song?.album || null,
+                    genre: extractedJson?.song?.genre || null,
+                    mood_tags: extractedJson?.song?.mood_tags || [],
+                },
+                message: extractedJson?.message || "Default message",
+            },
+            prompt: userInput || "Default prompt",
+        }))
           await fetch(import.meta.env.VITE_APP_LAMBDA_URL, {
             method: "POST",
             headers: {
