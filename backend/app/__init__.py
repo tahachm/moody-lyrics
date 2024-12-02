@@ -24,7 +24,7 @@ def create_app():
 TABLES = [
     """
     CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
+        id VARCHAR(50) PRIMARY KEY,
         cognito_sub VARCHAR(50) NOT NULL UNIQUE,
         username VARCHAR(50) NOT NULL,
         email VARCHAR(100) NOT NULL,
@@ -51,7 +51,7 @@ TABLES = [
     """
     CREATE TABLE IF NOT EXISTS llm_responses (
         id SERIAL PRIMARY KEY,
-        user_id INTEGER REFERENCES users(id),
+        user_id VARCHAR(50) REFERENCES users(id),
         input_message TEXT NOT NULL,
         response_message TEXT NOT NULL,
         song_id INTEGER REFERENCES songs(id),
@@ -68,19 +68,25 @@ TABLES = [
     """
 ]
 
+
 DUMMY_DATA = [
     """
-    INSERT INTO users (cognito_sub, username, email)
+    INSERT INTO users (id, cognito_sub, username, email)
     VALUES 
-        ('sub-12345', 'john_doe', 'john.doe@example.com'),
-        ('sub-67890', 'jane_smith', 'jane.smith@example.com')
+        ('user-1', 'sub-12345', 'john_doe', 'john.doe@example.com'),
+        ('user-2', 'sub-67890', 'jane_smith', 'jane.smith@example.com'),
+        ('user-3', 'sub-98765', 'alice_wonder', 'alice.wonder@example.com'),
+        ('user-4', 'sub-54321', 'bob_builder', 'bob.builder@example.com')
     ON CONFLICT (cognito_sub) DO NOTHING;
     """,
     """
     INSERT INTO songs (song_name, artist, album, genre)
     VALUES 
         ('Happy', 'Pharrell Williams', 'G I R L', 'Pop'),
-        ('Weightless', 'Marconi Union', NULL, 'Ambient')
+        ('Weightless', 'Marconi Union', NULL, 'Ambient'),
+        ('Shake It Off', 'Taylor Swift', '1989', 'Pop'),
+        ('Bohemian Rhapsody', 'Queen', 'A Night at the Opera', 'Rock'),
+        ('Imagine', 'John Lennon', NULL, 'Classic Rock')
     ON CONFLICT DO NOTHING;
     """,
     """
@@ -89,14 +95,20 @@ DUMMY_DATA = [
         ('happy'), 
         ('energetic'), 
         ('calm'), 
-        ('sad')
+        ('sad'),
+        ('reflective'),
+        ('uplifting'),
+        ('melancholic')
     ON CONFLICT (mood) DO NOTHING;
     """,
     """
     INSERT INTO llm_responses (user_id, input_message, response_message, song_id)
     VALUES 
-        (1, 'I feel like celebrating today!', 'Try listening to "Happy"!', 1),
-        (2, 'I need something relaxing.', 'How about "Weightless"?', 2)
+        ('user-1', 'I feel like celebrating today!', 'Try listening to "Happy"!', 1),
+        ('user-2', 'I need something relaxing.', 'How about "Weightless"?', 2),
+        ('user-3', 'I want something uplifting.', 'You might enjoy "Shake It Off"!', 3),
+        ('user-4', 'Play a classic rock favorite.', 'Sure! "Bohemian Rhapsody" is a great choice.', 4),
+        ('user-1', 'I want to feel inspired.', '"Imagine" by John Lennon could be perfect.', 5)
     ON CONFLICT DO NOTHING;
     """,
     """
@@ -105,7 +117,12 @@ DUMMY_DATA = [
         (1, 1), 
         (1, 2), 
         (2, 3), 
-        (2, 4)
+        (2, 4), 
+        (3, 6), 
+        (4, 5), 
+        (4, 6), 
+        (5, 7), 
+        (5, 5)
     ON CONFLICT DO NOTHING;
     """
 ]
