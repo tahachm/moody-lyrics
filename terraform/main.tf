@@ -384,10 +384,16 @@ module "cloudfront" {
   depends_on = [local_file.aws_exports]
 }
 
+resource "random_string" "bucket_suffix" {
+  length  = 8
+  special = false
+  upper   = false
+}
+
 # S3 Module
 module "s3" {
   source             = "./modules/s3"
-  bucket_name        = var.bucket_name
+  bucket_name        = "${var.bucket_name}-${random_string.bucket_suffix.result}"
   oai_arn            = module.cloudfront.origin_access_identity_arn  # Pass OAI ARN from CloudFront
   alb_dns_name       = module.alb.alb_dns_name
   lambda_url         = "${aws_apigatewayv2_api.lambda_api.api_endpoint}/${aws_apigatewayv2_stage.default_stage.name}"

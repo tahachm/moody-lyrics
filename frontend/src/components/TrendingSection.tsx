@@ -109,7 +109,7 @@ function TrendingSection() {
       <>
         {topUsers.map((user, index) => (
           <div
-            key={user.rank}
+            key={user.text}
             className="flex items-center justify-between bg-white bg-opacity-10 rounded-lg p-3"
           >
             <div className="flex items-center gap-2">
