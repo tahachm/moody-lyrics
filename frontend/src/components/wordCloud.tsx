@@ -4,6 +4,8 @@ import { scaleLog } from '@visx/scale';
 import Wordcloud from '@visx/wordcloud/lib/Wordcloud';
 import { totoAfricaLyrics } from './text.fixture';
 import "./wordCloud.css"
+import { useRecoilState } from 'recoil';
+import { responseGeneratedState } from '../recoil/atoms';
 
 interface ExampleProps {
   width: number;
@@ -52,32 +54,36 @@ export default function WordCloud({ width, height, showControls }: ExampleProps)
   const [spiralType, setSpiralType] = useState<SpiralType>('archimedean');
   const [withRotation, setWithRotation] = useState(false);
   const [words, setWords] = useState<WordData[]>([]);
+  const reloadState = useRecoilState(responseGeneratedState);
 
+  const fetchWordData = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_APP_BACKEND_URL}/api/song-frequencies`);
+      const result = await response.json();
+      console.log(result);
+      if (result) {
+        // Update font scale based on the fetched data
+        const maxValue = Math.max(...result.map((d: WordData) => d.value));
+        const minValue = Math.min(...result.map((d: WordData) => d.value));
+        fontScale.domain([minValue, maxValue]);
+
+        // Set fetched words
+        setWords(result);
+      } else {
+        console.error("Unexpected API response:", result);
+      }
+    } catch (error) {
+      console.error("Error fetching word data:", error);
+    }
+  };
 
   useEffect(() => {
-    const fetchWordData = async () => {
-      try {
-        const response = await fetch(`${import.meta.env.VITE_APP_BACKEND_URL}/api/song-frequencies`);
-        const result = await response.json();
-        console.log(result);
-        if (result) {
-          // Update font scale based on the fetched data
-          const maxValue = Math.max(...result.map((d: WordData) => d.value));
-          const minValue = Math.min(...result.map((d: WordData) => d.value));
-          fontScale.domain([minValue, maxValue]);
-
-          // Set fetched words
-          setWords(result);
-        } else {
-          console.error("Unexpected API response:", result);
-        }
-      } catch (error) {
-        console.error("Error fetching word data:", error);
-      }
-    };
-
     fetchWordData();
   }, []);
+
+  useEffect(() => {
+    fetchWordData();
+  }, [reloadState]);
 
 
   return (

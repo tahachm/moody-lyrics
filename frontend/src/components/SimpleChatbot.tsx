@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { generateText } from "ai";
 import { createOpenAI as createGroq } from "@ai-sdk/openai";
-import { userIdState, userNameState } from "../recoil/atoms"; 
-import { useRecoilValue } from "recoil"; 
+import { responseGeneratedState, userIdState, userNameState } from "../recoil/atoms"; 
+import { useRecoilState, useRecoilValue } from "recoil"; 
 import "./SimpleChatbot.css";
 
 
@@ -10,6 +10,7 @@ const SimpleChatbot = () => {
   const [userInput, setUserInput] = useState("");
   const [responseJson, setResponseJson] = useState<any>(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [reloadState,setReloadState] = useRecoilState(responseGeneratedState);
 
   const userId = useRecoilValue(userIdState); //uncomment this line once login signup is successfully implemented
     // const userId = "7"; //comment this temporary line once login signup is successfully implemented
@@ -105,6 +106,7 @@ const SimpleChatbot = () => {
               prompt: userInput || "Default prompt",
           }),
           });
+          setReloadState(!reloadState);
         } catch (apiError) {
           console.error("Error sending data to Lambda:", apiError);
           setErrorMessage("Failed to send data to the server, but the recommendation is displayed below.");

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Crown, Medal, Trophy } from 'lucide-react';
-import { userIdState, userNameState } from "../recoil/atoms";
+import { responseGeneratedState, userIdState, userNameState } from "../recoil/atoms";
 import { useRecoilValue } from "recoil";
 
 interface UserRank {
@@ -23,6 +23,7 @@ function TrendingSection() {
   const [moods, setMoods] = useState<MoodFrequency[]>([]);
   const userId = useRecoilValue(userIdState);
   const userName = useRecoilValue(userNameState);
+  const reloadState = useRecoilValue(responseGeneratedState);
 
   const rankIcons = [
     <Crown key={1} className="h-6 w-6 text-yellow-400" />,
@@ -33,50 +34,57 @@ function TrendingSection() {
     </svg>
   ];
 
+  const fetchUserRanks = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_APP_BACKEND_URL}/api/user-ranks`
+      );
+      const result = await response.json();
+      if (result) {
+        // Find the current user from user ranks
+        result.sort((a: UserRank, b: UserRank) => a.rank - b.rank);
+        const currentUser = result.find(
+          (user: UserRank) => user.text === userName
+        );
+        setCurrentUser(currentUser || null);
+        setTopUsers(result.slice(0, 3));
+      }
+    } catch (error) {
+      console.error("Error fetching user ranks:", error);
+    }
+  };
+
+  // Fetch mood frequencies
+  const fetchMoodFrequencies = async () => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_APP_BACKEND_URL}/api/mood-frequencies`
+      );
+      const result = await response.json();
+      if (result) {
+        // Sort moods by value in descending order
+        const sortedMoods = result.sort(
+          (a: MoodFrequency, b: MoodFrequency) => b.value - a.value
+        );
+        setMoods(sortedMoods);
+      }
+    } catch (error) {
+      console.error("Error fetching mood frequencies:", error);
+    }
+  };
+
   useEffect(() => {
     // Fetch user ranks
-    const fetchUserRanks = async () => {
-      try {
-        const response = await fetch(
-          `${import.meta.env.VITE_APP_BACKEND_URL}/api/user-ranks`
-        );
-        const result = await response.json();
-        if (result) {
-          // Find the current user from user ranks
-          result.sort((a: UserRank, b: UserRank) => a.rank - b.rank);
-          const currentUser = result.find(
-            (user: UserRank) => user.text === userName
-          );
-          setCurrentUser(currentUser || null);
-          setTopUsers(result.slice(0, 3));
-        }
-      } catch (error) {
-        console.error("Error fetching user ranks:", error);
-      }
-    };
-
-    // Fetch mood frequencies
-    const fetchMoodFrequencies = async () => {
-      try {
-        const response = await fetch(
-          `${import.meta.env.VITE_APP_BACKEND_URL}/api/mood-frequencies`
-        );
-        const result = await response.json();
-        if (result) {
-          // Sort moods by value in descending order
-          const sortedMoods = result.sort(
-            (a: MoodFrequency, b: MoodFrequency) => b.value - a.value
-          );
-          setMoods(sortedMoods);
-        }
-      } catch (error) {
-        console.error("Error fetching mood frequencies:", error);
-      }
-    };
 
     fetchUserRanks();
     fetchMoodFrequencies();
   }, [userId]);
+
+
+  useEffect(()=>{
+    fetchUserRanks();
+    fetchMoodFrequencies();
+  },[reloadState])
 
 
   return (

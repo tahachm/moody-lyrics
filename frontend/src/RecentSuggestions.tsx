@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { userIdState } from "./recoil/atoms"; 
+import { responseGeneratedState, userIdState } from "./recoil/atoms"; 
 import { useRecoilValue } from "recoil"; 
 
 
@@ -13,52 +13,61 @@ export default function SuggestedSongs() {
 
   const [suggestedSongs, setSuggestedSongs] = useState<Song[]>([]);
   const userId = useRecoilValue(userIdState); // Get user ID from Recoil state
+  const reloadSuggestions = useRecoilValue(responseGeneratedState); // Get user ID from Recoil state
   const [loading, setLoading] = useState(false); // Loading state
   const [error, setError] = useState<string | null>(null); // Error state
 
+  const fetchSuggestions = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_APP_BACKEND_URL}/api/recent-suggestions`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ user_id: userId }), // Pass the user_id in the request body
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to fetch suggestions");
+      }
+
+      const data = await response.json();
+      // Map the API response to the expected structure
+      const formattedData = data.map((item: any, index: number) => ({
+        id: index,
+        name: item.song_name,
+        description: `By ${item.artist} | Suggested on ${new Date(item.created_at).toLocaleDateString()}`,
+      }));
+
+      setSuggestedSongs(formattedData);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     // Fetch recently suggested songs
-    const fetchSuggestions = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        const response = await fetch(
-          `${import.meta.env.VITE_APP_BACKEND_URL}/api/recent-suggestions`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ user_id: userId }), // Pass the user_id in the request body
-          }
-        );
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || "Failed to fetch suggestions");
-        }
-
-        const data = await response.json();
-        // Map the API response to the expected structure
-        const formattedData = data.map((item: any, index: number) => ({
-          id: index,
-          name: item.song_name,
-          description: `By ${item.artist} | Suggested on ${new Date(item.created_at).toLocaleDateString()}`,
-        }));
-
-        setSuggestedSongs(formattedData);
-      } catch (err: any) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (userId) {
       fetchSuggestions();
     }
   }, [userId]);
+
+  useEffect(()=>{
+    if (userId) {
+      fetchSuggestions();
+    }
+  },[reloadSuggestions])
+
+
 
   return (
     <div className="max-w-7xl mx-auto px-4 space-y-12 pb-12">

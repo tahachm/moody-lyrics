@@ -23,3 +23,9 @@ export const isAuthenticatedState = atom<boolean>({
   default: false,
   effects_UNSTABLE: [persistAtom],
 });
+
+export const responseGeneratedState = atom<boolean>({
+  key: "responseGeneratedState",
+  default: false,
+  effects_UNSTABLE: [persistAtom],
+});
