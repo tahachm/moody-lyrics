@@ -66,7 +66,8 @@ function TrendingSection() {
         const sortedMoods = result.sort(
           (a: MoodFrequency, b: MoodFrequency) => b.value - a.value
         );
-        setMoods(sortedMoods);
+        const topMoods = sortedMoods.slice(0, 20);
+        setMoods(topMoods);
       }
     } catch (error) {
       console.error("Error fetching mood frequencies:", error);
