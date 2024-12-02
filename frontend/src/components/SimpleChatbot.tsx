@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { generateText } from "ai";
 import { createOpenAI as createGroq } from "@ai-sdk/openai";
-import { userIdState } from "../recoil/atoms"; //uncomment this line once login signup is successfully implemented
-import { useRecoilValue } from "recoil"; //uncomment this line once login signup is successfully implemented
+import { userIdState, userNameState } from "../recoil/atoms"; 
+import { useRecoilValue } from "recoil"; 
 import "./SimpleChatbot.css";
 
 
@@ -13,8 +13,7 @@ const SimpleChatbot = () => {
 
   const userId = useRecoilValue(userIdState); //uncomment this line once login signup is successfully implemented
     // const userId = "7"; //comment this temporary line once login signup is successfully implemented
-  const username = "example_user";
-  const email = "example_user@gmail.com";
+  const userName = useRecoilValue(userNameState); 
 
   const handleInputChange = (e: any) => {
     setUserInput(e.target.value);
@@ -65,21 +64,30 @@ const SimpleChatbot = () => {
         const extractedJson = JSON.parse(jsonMatch[0]);
         setResponseJson(extractedJson); // Display the correct response
         setErrorMessage(""); // Clear any previous error messages
-    
+        console.log("extracted json", extractedJson);
         try {
           // Send data to your API
-          await fetch("https://your-api-endpoint/lambda-handler", {
+          await fetch(import.meta.env.VITE_APP_LAMBDA_URL, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
             body: JSON.stringify({
-              userId,
-              username,
-              email,
-              llmResponse: extractedJson,
-              prompt: userInput,
-            }),
+              userId : userId, // Ensure this is a UUID string
+              username : userName, // Valid username
+              email : userName, // Valid email
+              llmResponse: {
+                  song: {
+                      name: extractedJson?.song?.name || "Unknown",
+                      artist: extractedJson?.song?.artist || "Unknown",
+                      album: extractedJson?.song?.album || null,
+                      genre: extractedJson?.song?.genre || null,
+                      mood_tags: extractedJson?.song?.mood_tags || [],
+                  },
+                  message: extractedJson?.message || "Default message",
+              },
+              prompt: userInput || "Default prompt",
+          }),
           });
         } catch (apiError) {
           console.error("Error sending data to Lambda:", apiError);
@@ -97,9 +105,6 @@ const SimpleChatbot = () => {
       }
       setResponseJson(null);
     }
-    
-
-
   };
 
   return (
