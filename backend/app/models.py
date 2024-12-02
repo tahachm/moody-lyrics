@@ -93,3 +93,36 @@ def get_user_ranks():
     
     # Format results as a list of dictionaries
     return [{"text": row[0], "value": row[1], "rank": row[2]} for row in results]
+
+def get_recently_suggested_songs(user_id):
+    """
+    Fetch recently suggested songs for a specific user.
+    Args:
+        user_id (int): User ID to filter suggestions.
+    Returns:
+        List[Dict]: List of recently suggested songs.
+    """
+    query = """
+    SELECT 
+        s.song_name, 
+        s.artist, 
+        lr.created_at
+    FROM 
+        songs s
+    JOIN 
+        llm_responses lr ON s.id = lr.song_id
+    WHERE 
+        lr.user_id = %s
+    ORDER BY 
+        lr.created_at DESC
+    LIMIT 10;
+    """
+    connection = get_db_connection()
+    cursor = connection.cursor()
+    cursor.execute(query, (user_id,))
+    results = cursor.fetchall()
+    cursor.close()
+    connection.close()
+    
+    # Format results as a list of dictionaries
+    return [{"song_name": row[0], "artist": row[1], "created_at": row[2]} for row in results]
