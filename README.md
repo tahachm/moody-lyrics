@@ -1,14 +1,12 @@
 # moody-lyrics
 Codebase for our AWS project in CS487 Cloud Development (LUMS)
 
-For grading / instructor:
-Run terraform init, terraform apply inside terraform directory.
+How to Compile and run terraform code (Only Tested on Mac Automation Commands may differ on Windows)
 
-Notes for self:
-How to run backend with SSL
-
-cd into terraform folder
-brew install openssl(mac)/install openssl in windows(https://slproweb.com/products/Win32OpenSSL.html)
+make a .env file in frontend folder
+cd terraform
+terraform init
+brew install openssl
 
 CopyPaste these commands togather in the terminal and 3 files will be created inside the terraform folder:
 
@@ -18,3 +16,5 @@ openssl x509 -req -days 365 -in selfsigned.csr -signkey selfsigned.key -out self
 
 terraform apply -auto-approve
 
+Now you will get alb dns name copy paste it into browser and proceed the unsafe warning page so browser trusts https request from backend server
+Now use the cloudfront url to access the frontend, signup and enjoy
