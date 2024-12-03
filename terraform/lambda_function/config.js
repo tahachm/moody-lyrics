@@ -7,6 +7,7 @@ const DB_CONFIG = {
     ssl: {
         rejectUnauthorized: false, // Use false unless you have a custom CA certificate
       },
+    LLAMA_API_KEY: process.env.LLAMA_API_KEY,  
 };
 
 export default DB_CONFIG;

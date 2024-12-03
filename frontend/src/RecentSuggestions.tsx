@@ -124,7 +124,7 @@ export default function SuggestedSongs() {
           {/* No Suggestions State */}
           {suggestedSongs.length === 0 && !loading && !error && (
             <div className="text-center text-gray-300 mt-2">
-              No suggestions found.
+              No suggestions Currently.
             </div>
           )}
         </div>

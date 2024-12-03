@@ -48,3 +48,7 @@ variable "db_pass" {
 variable "db_name" {
   description = "Database name"
 }
+
+variable "llama_api_key" {
+  description = "API key for Llama API"
+}

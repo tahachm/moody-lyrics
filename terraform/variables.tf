@@ -58,7 +58,12 @@ variable "lambda_runtime" {
 
 variable "lambda_timeout" {
   description = "Timeout for the Lambda function in seconds"
-  default     = 15
+  default     = 60
+}
+
+variable "llama_api_key" {
+  description = "value of the llama api key"
+  default = "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"
 }
 
 

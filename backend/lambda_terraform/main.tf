@@ -46,6 +46,7 @@ resource "aws_lambda_function" "my_lambda_function" {
       DB_USER = var.db_user
       DB_PASS = var.db_pass
       DB_NAME = var.db_name
+      LLAMA_API_KEY = var.llama_api_key
     }
   }
 }

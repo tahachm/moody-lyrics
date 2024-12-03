@@ -1,6 +1,9 @@
 import pkg from 'pg';
 const { Pool } = pkg; // Destructure Pool from the default export
 import DB_CONFIG from './config.js'; // Import your database config
+import { createOpenAI as createGroq } from "@ai-sdk/openai";
+import { generateText } from "ai";
+
 
 // Create a connection pool
 const pool = new Pool(DB_CONFIG);
@@ -29,19 +32,67 @@ const lambdaHandler = async (event) => {
     try {
         console.log('Step 2: Parsing input...');
         const body = JSON.parse(event.body);
-        const { userId, username, email, llmResponse, prompt } = body;
+        // const { userId, username, email, llmResponse, prompt } = body;
+        const { userId, username, email, userInput } = body;
 
-        if (!userId || !username || !email) {
-            throw new Error("Missing required fields: userId, username, or email.");
+        if(!userId || !username || !email || !userInput) {
+            throw new Error("Missing required fields: userId, username, email, or userInput.");
         }
+        console.log("llama API key : ", DB_CONFIG.LLAMA_API_KEY);
+        console.log("userInput : ", userInput);
 
-        const songName = llmResponse.song.name;
-        const artist = llmResponse.song.artist;
-        const album = llmResponse.song.album || 'None';
-        const genre = llmResponse.song.genre || null;
-        const moodTags = llmResponse.song.mood_tags || [];
-        const inputMessage = prompt;
-        const responseMessage = llmResponse.message;
+        const groq = createGroq({
+            baseURL: "https://api.groq.com/openai/v1",
+            apiKey: DB_CONFIG.LLAMA_API_KEY,
+          });
+          
+          try {
+            const { text } = await generateText({
+              model: groq("llama-3.2-1b-preview"),
+              system: `
+                You are a highly sophisticated song recommendation engine. Your task is to provide the best possible song recommendation 
+                based on a user's emotional state, which is expressed in their query. For each user query, suggest a single song 
+                that aligns with the user's current mood and situation. 
+                The song recommendation should include the following:
+                1. Song Name
+                2. Artist Name
+                3. Album Name (if applicable else "None")
+                4. 3 Closest Mood Tags (e.g., happy, calm, energetic, frustrated, etc.) that best represent the mood of the user based on the query.
+                5. Song Genre (e.g., rock, pop, classical, etc.)
+                6. A personalized message offering encouragement, advice, or empathy that fits the user's emotional context. 
+                Your response should be in JSON format only, with no additional commentary.
+          
+                Example:
+                {
+                  "song": {
+                    "name": "Born to Be Wild",
+                    "artist": "Steppenwolf",
+                    "album": "Steppenwolf",
+                    "mood_tags": ["thrill", "freedom", "adrenaline"],
+                    "genre": "rock"
+                  },
+                  "message": "Feel the wind in your face and let the music amplify the rush! Ride safe and enjoy the adrenaline!"
+                }
+          
+                User Query:
+              `,
+              prompt: userInput,
+            });
+          
+        
+            
+        
+        
+        const jsonMatch = text.match(/{[\s\S]*}/);
+        const llamaData = JSON.parse(jsonMatch[0]);
+        console.log('Llama API response:', llamaData);
+
+        const songName = llamaData.song.name;
+        const artist = llamaData.song.artist;
+        const album = llamaData.song.album || 'None';
+        const genre = llamaData.song.genre || null;
+        const moodTags = llamaData.song.mood_tags || [];
+        const responseMessage = llamaData.message;
 
         console.log('Step 3: Starting transaction...');
         await client.query('BEGIN');
@@ -113,7 +164,7 @@ const lambdaHandler = async (event) => {
             VALUES ($1, $2, $3, $4)
             RETURNING id
             `,
-            [userId, inputMessage, responseMessage, songId]
+            [userId, userInput, responseMessage, songId]
         );
         const llmResponseId = llmResponseResult.rows[0].id;
 
@@ -159,35 +210,54 @@ const lambdaHandler = async (event) => {
         console.log('Step 8: Committing transaction...');
         await client.query('COMMIT');
 
-        console.log('Step 9: Returning success response...');
-        return {
-            statusCode: 200,
-            headers: {
-                "Access-Control-Allow-Origin": "*", // Replace '*' with your frontend domain in production
-                "Access-Control-Allow-Methods": "OPTIONS,POST,GET", // Allowed methods
-                "Access-Control-Allow-Headers": "Content-Type, Authorization", // Allowed headers
-            },
-            body: JSON.stringify({ message: 'LLM response stored successfully!' }),
-        };
-    } catch (error) {
-        console.error('Error storing LLM response:', error);
+        
 
-        console.log('Rolling back transaction...');
-        await client.query('ROLLBACK');
+    return {
+        statusCode: 200,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "OPTIONS,POST,GET",
+          "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        },
+        body: JSON.stringify({
+          llmResponse: llamaData, // Forward the Llama response to the frontend
+          message: "Data stored successfully",
+        }),
+      };
+    }
 
+    catch(error) {
+        console.error("Erro sending llama request:", error);
         return {
             statusCode: 500,
             headers: {
-                "Access-Control-Allow-Origin": "*", // Replace '*' with your frontend domain in production
+                "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Methods": "OPTIONS,POST,GET",
                 "Access-Control-Allow-Headers": "Content-Type, Authorization",
             },
-            body: JSON.stringify({ error: error || 'Failed to store LLM response.' }),
-        };
+            body: JSON.stringify({ error: "Failed to process request." }),
+            };
+        }
+    
+      
+    } catch (error) {
+      console.error('Error:', error);
+  
+      await client.query('ROLLBACK');
+  
+      return {
+        statusCode: 500,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "OPTIONS,POST,GET",
+          "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        },
+        body: JSON.stringify({ error: "Failed to process request." }),
+      };
     } finally {
-        console.log('Releasing database connection...');
-        client.release(); // Release the client back to the pool
+      client.release();
     }
+  
 };
 
 // Export as default for ES module compatibility

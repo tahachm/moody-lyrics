@@ -269,6 +269,7 @@ resource "aws_lambda_function" "my_lambda_function" {
       DB_USER = module.rds.rds_username
       DB_PASS = module.rds.rds_password
       DB_NAME = module.rds.rds_database_name
+      LLAMA_API_KEY = var.llama_api_key
     }
   }
 
