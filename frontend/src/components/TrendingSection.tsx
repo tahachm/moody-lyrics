@@ -81,7 +81,7 @@ function TrendingSection() {
     fetchMoodFrequencies();
   }, [userId]);
 
-
+  
   useEffect(()=>{
     fetchUserRanks();
     fetchMoodFrequencies();

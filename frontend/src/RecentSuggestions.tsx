@@ -6,6 +6,7 @@ import { useRecoilValue } from "recoil";
 interface Song {
   id: number
   name: string
+  artist_name:string
   description: string
 }
 
@@ -19,6 +20,7 @@ export default function SuggestedSongs() {
   const reloadSuggestions = useRecoilValue(responseGeneratedState); // Get user ID from Recoil state
   const [loading, setLoading] = useState(false); // Loading state
   const [error, setError] = useState<string | null>(null); 
+
 
   const fetchSuggestions = async () => {
     setLoading(true);
@@ -46,7 +48,8 @@ export default function SuggestedSongs() {
       const formattedData = data.map((item: any, index: number) => ({
         id: index,
         name: item.song_name,
-        description: `By ${item.artist} | Suggested on ${new Date(item.created_at).toLocaleDateString()}`,
+        artist_name: item.artist,
+        description: `${item.created_at}`,
       }));
 
       setSuggestedSongs(formattedData);
@@ -58,22 +61,31 @@ export default function SuggestedSongs() {
   };
 
   useEffect(() => {
-    // Fetch recently suggested songs
-    if (userId) {
-      fetchSuggestions();
-    }
+    const fetchData = async () => {
+      // Fetch recently suggested songs
+      if (userId) {
+        await fetchSuggestions();
+      }
+    };
+  
+    fetchData();
   }, [userId]);
 
-  useEffect(()=>{
-    if (userId) {
-      fetchSuggestions();
-    }
-  },[reloadSuggestions])
+  useEffect(() => {
+    const fetchData = async () => {
+      // Fetch recently suggested songs
+      if (userId) {
+        await fetchSuggestions();
+      }
+    };
+  
+    fetchData();
+  }, [reloadSuggestions]);
 
 
 
   return (
-    <div className="max-w-7xl mx-auto px-4 space-y-12 pb-12">
+    <div className="max-w-7xl px-4 space-y-12 pb-12">
         {/* Recent Suggestions */}
         <section>
         <div className="mb-6">
@@ -123,22 +135,25 @@ export default function SuggestedSongs() {
             {suggestedSongs.length>0 && suggestedSongs.map((song, i) => (
               <div 
                 key={i} 
-                className="bg-white bg-opacity-5 rounded-lg p-4 hover:bg-opacity-10 transition-colors duration-200 cursor-pointer"
+                className="bg-white bg-opacity-5 rounded-lg p-4 hover:bg-opacity-10 transition-colors duration-200 cursor-pointer min-w-32 !min-h-16 text-left"
               >
-                <div className="flex items-start gap-3">
+                <div className="flex !min-h-16 items-start gap-3">
                   <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-fuchsia-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                     </svg>
                   </div>
                   <div>
-                    <h3 className="font-medium text-white group-hover:text-fuchsia-400 transition-colors">
+                    <h3 className="text-lg text-left text-white group-hover:text-fuchsia-400 transition-colors">
                       {song.name}
+                    </h3>
+                    <h3 className="text-xs italic text-left text-white group-hover:text-fuchsia-400 transition-colors">
+                      {song.artist_name}
                     </h3>
                   </div>
                 </div>
                 <p className="text-sm text-left text-gray-300 mt-3 line-clamp-2">
-                  {song.description}
+                  {song.description} 
                 </p>
               </div>
             ))}
