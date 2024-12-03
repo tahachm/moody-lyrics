@@ -1,7 +1,10 @@
 # moody-lyrics
 Codebase for our AWS project in CS487 Cloud Development (LUMS)
 
+For grading / instructor:
+Run terraform init, terraform apply inside terraform directory.
 
+Notes for self:
 How to run backend with SSL
 
 cd into terraform folder
@@ -14,3 +17,4 @@ openssl req -new -key selfsigned.key -out selfsigned.csr -subj "/CN=*.compute.am
 openssl x509 -req -days 365 -in selfsigned.csr -signkey selfsigned.key -out selfsigned.crt
 
 terraform apply -auto-approve
+
