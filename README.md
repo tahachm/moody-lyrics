@@ -1,9 +1,35 @@
 # 🌙 Moody Lyrics 🎵
-Codebase for our **AWS project** in **CS487 Cloud Development (LUMS)**.
 
-This project provisions multiple AWS resources using **Terraform**, including an **RDS database**, **Lambda functions**, an **Application Load Balancer (ALB)**, and more. Once deployed, you can use the generated URLs to access the backend and frontend services.
+This project demonstrates a scalable, cloud-native web application deployed on **AWS**, integrating **LLMs** and **real-time analytics** to recommend songs based on user mood. It leverages **Terraform** for infrastructure automation, adheres to best practices in **high availability**, **scalability**, and **security**, and provides a seamless experience for both users and developers.
+
+
+## 🏗️ Cloud Architecture  
+
+**Cloud Components:**  
+- 🖥️ **Frontend**:  
+  - ReactJS SPA hosted on **S3**  
+  - Global delivery via **CloudFront**  
+  - Cognito User Authentication  
+- ⚙️ **Backend**:  
+  - EC2 instances (Flask API) in Auto Scaling Groups behind an ALB  
+  - Serverless AWS Lambda for LLM data parsing and database integration  
+- 🗄️ **Database**:  
+  - PostgreSQL on Amazon RDS (Multi-AZ for High Availability)  
+- 🔒 **Security**:  
+  - Cognito for authentication and MFA  
+  - IAM Roles following least privilege principle  
+  - VPC with private subnets for EC2 and RDS  
+- 📊 **Monitoring**:  
+  - CloudWatch logs for Lambda, EC2, and API Gateway  
+- ☁️ **Infrastructure as Code (IaC)**:  
+  - Terraform for provisioning and configuration  
+
+Following is the architecture diagram:
+
+<img src="./Screenshot 2025-03-21 at 5.21.17 AM.png" alt="Architecture Diagram" width="500"/>
 
 ---
+
 
 ## 🛠️ How to Compile and Run Terraform Code
 > _Only tested on **Mac**. Automation commands may differ on **Windows**._
@@ -48,7 +74,6 @@ You’ll need these to access backend APIs, frontend websites, and more.
 | lambda_invoke_arn| The Invoke ARN used to trigger the AWS Lambda Function.|
 | lambda_role_arn      |The IAM Role ARN for Lambda's execution role.|
 | cloudfront_domain_name      | The domain name of the CloudFront distribution.|
-
 
 ### Accessing the application
 
